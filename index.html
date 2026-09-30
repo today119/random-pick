@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>두구두구 뽑기 🎲</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#fff4fb; --bg2:#eef6ff; --bg3:#fffaec;
+  --ink:#3d3550; --sub:#8a83a0; --line:#ece7f6; --card:#fff;
+  --grape:#8b6fd6; --grape-d:#6f55b8;
+  --pink:#ff8fb1; --pink-d:#ef6f97;
+  --mint:#5ecfb0; --sun:#ffc861; --sky:#6fc3f0;
+  --shadow:0 5px 0 rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0; font-family:'Jua',system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;
+  color:var(--ink); background:linear-gradient(155deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+  background-attachment:fixed; padding-bottom:40px; overflow-x:hidden}
+button{font-family:inherit; color:inherit; cursor:pointer; border:none; background:none}
+.spacer{flex:1}
+.btn{border:2px solid var(--line); background:#fff; border-radius:18px; padding:.6em 1.1em;
+  font-size:clamp(15px,2vh,21px); box-shadow:var(--shadow)}
+.btn:active{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.09)}
+.btn.primary{background:var(--grape); border-color:var(--grape-d); color:#fff}
+.btn.pink{background:var(--pink); border-color:var(--pink-d); color:#fff}
+.btn.mini{padding:.42em .75em; font-size:clamp(13px,1.7vh,17px); border-radius:14px}
+.btn.danger{color:#d9534f}
+.btn[disabled]{opacity:.45; pointer-events:none}
+
+/* ── 배경 손그림 ── */
+.deco{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden}
+.deco span{position:absolute; font-size:clamp(26px,5vw,52px); opacity:.35; animation:floaty 7s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-12px) rotate(calc(var(--r,0deg) + 6deg))}}
+.wrap{position:relative; z-index:1}
+
+header{display:flex; align-items:center; gap:10px; padding:14px 16px 2px; flex-wrap:wrap}
+.htitle{font-size:clamp(21px,3vh,30px)}
+.htitle small{display:block; font-size:.52em; color:var(--sub)}
+
+/* ── 모드 탭 ── */
+.tabs{display:flex; gap:8px; overflow-x:auto; padding:10px 16px 4px; scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto; border:2px solid var(--line); background:#fff; border-radius:18px;
+  padding:.5em .95em; font-size:clamp(15px,2vh,20px); color:var(--sub); box-shadow:0 3px 0 rgba(0,0,0,.06)}
+.tab.on{background:var(--grape); border-color:var(--grape-d); color:#fff}
+
+/* ── 무대 ── */
+.stage{max-width:760px; margin:10px auto 0; padding:0 16px}
+.board{background:#fff; border:4px solid var(--line); border-radius:30px; padding:18px 16px 22px;
+  box-shadow:0 8px 0 rgba(0,0,0,.07); position:relative; overflow:hidden; min-height:34vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px}
+.mascot{font-size:clamp(34px,7vh,64px); line-height:1}
+.mascot.roll{animation:hop .5s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+.bigname{font-size:clamp(34px,9vh,86px); line-height:1.1; text-align:center; word-break:keep-all;
+  color:var(--grape-d); min-height:1.2em}
+.bigname.roll{color:var(--sub); opacity:.75}
+.sayline{color:var(--sub); font-size:clamp(14px,2vh,19px); text-align:center}
+.ctl{display:flex; gap:9px; flex-wrap:wrap; justify-content:center; margin-top:6px}
+.numrow{display:flex; align-items:center; gap:8px; font-size:clamp(15px,2vh,19px); flex-wrap:wrap; justify-content:center}
+.num{display:flex; align-items:center; gap:6px; border:2px solid var(--line); border-radius:16px; padding:.2em .3em; background:#fff}
+.num button{width:2em; font-size:1.1em; color:var(--grape-d)}
+.num b{min-width:2.2em; text-align:center}
+
+/* 결과 카드들 */
+.cards{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; width:100%}
+.gcard{border:3px solid var(--line); border-radius:22px; padding:10px 12px 12px; background:#fdfcff;
+  min-width:140px; flex:1 1 170px; max-width:230px; box-shadow:0 4px 0 rgba(0,0,0,.06)}
+.gcard h4{margin:.1em 0 .4em; font-size:clamp(16px,2.2vh,21px); display:flex; align-items:center; gap:6px}
+.gcard ul{margin:0; padding-left:1.1em; font-size:clamp(15px,2.1vh,20px); line-height:1.55}
+.gcard.c0{border-color:#ffc0d4} .gcard.c1{border-color:#bfe3ff} .gcard.c2{border-color:#c9f0dd}
+.gcard.c3{border-color:#ffe3a8} .gcard.c4{border-color:#dcd0ff} .gcard.c5{border-color:#ffd2b8}
+.pairline{display:flex; align-items:center; gap:8px; justify-content:center; font-size:clamp(17px,2.6vh,26px);
+  border:3px solid var(--line); border-radius:20px; padding:.45em .8em; background:#fff; box-shadow:0 4px 0 rgba(0,0,0,.06)}
+.orderlist{width:100%; display:flex; flex-direction:column; gap:7px}
+.oitem{display:flex; align-items:center; gap:10px; border:2px solid var(--line); border-radius:16px;
+  padding:.4em .7em; background:#fff; font-size:clamp(16px,2.3vh,22px)}
+.oitem .no{background:var(--grape); color:#fff; border-radius:50%; width:1.7em; height:1.7em;
+  display:flex; align-items:center; justify-content:center; font-size:.85em; flex:0 0 auto}
+.picked{display:flex; flex-wrap:wrap; gap:7px; justify-content:center}
+.ptag{border:2px solid var(--pink); background:#fff2f7; border-radius:14px; padding:.3em .6em;
+  font-size:clamp(15px,2vh,20px)}
+
+/* 색종이 */
+.confetti{position:absolute; inset:0; pointer-events:none; overflow:hidden}
+.confetti i{position:absolute; width:9px; height:14px; border-radius:2px; animation:fall linear forwards}
+@keyframes fall{from{transform:translateY(-20px) rotate(0)}to{transform:translateY(120%) rotate(540deg)}}
+
+/* ── 명단 ── */
+.pool{max-width:760px; margin:16px auto 0; padding:0 16px}
+.pool h3{font-size:clamp(16px,2.1vh,21px); margin:.2em 0 .4em; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.hint{color:var(--sub); font-size:clamp(13px,1.8vh,17px); margin:.3em 0}
+.chips{display:flex; flex-wrap:wrap; gap:7px}
+.chip{border:2px solid var(--line); background:#fff; border-radius:15px; padding:.38em .7em;
+  font-size:clamp(14px,1.9vh,19px); box-shadow:0 3px 0 rgba(0,0,0,.06)}
+.chip.off{background:#f3f1f8; color:#b9b3c8; text-decoration:line-through; box-shadow:none}
+.chip.done{border-color:var(--pink); background:#fff4f8}
+
+/* ── 설정 ── */
+.modal{position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center;
+  padding:16px; background:rgba(60,50,80,.35); backdrop-filter:blur(3px)}
+.modal.on{display:flex}
+.sheet{width:min(560px,100%); max-height:88vh; overflow:auto; background:#fff; border-radius:26px;
+  border:3px solid var(--line); box-shadow:0 10px 0 rgba(0,0,0,.10); padding:18px}
+.sheet h3{margin:.1em 0 .5em; font-size:clamp(19px,2.6vh,26px)}
+label.f{display:block; margin:.9em 0 .3em; font-size:clamp(15px,1.9vh,19px)}
+textarea{width:100%; min-height:30vh; font-family:inherit; font-size:clamp(16px,2vh,20px); line-height:1.55;
+  border:2px solid var(--line); border-radius:14px; padding:.6em .75em; background:#fdfcff; color:var(--ink); resize:vertical}
+.frow{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.sheet>.frow.foot{position:sticky; bottom:-18px; z-index:5; margin-top:16px; padding:12px 0 18px;
+  background:#fff; border-top:2px dashed var(--line)}
+.toggle{display:flex; align-items:center; gap:10px; margin-top:1em; font-size:clamp(15px,1.9vh,19px); cursor:pointer}
+.sw{width:52px; height:30px; border-radius:99px; background:#ddd6ee; position:relative; flex:0 0 auto; transition:background .18s}
+.sw i{position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.25); transition:left .18s}
+.sw.on{background:var(--mint)} .sw.on i{left:25px}
+
+@media print{
+  @page{size:A4 portrait; margin:14mm}
+  body{background:#fff}
+  .noprint,.deco{display:none !important}
+  .board{border-color:#bbb; box-shadow:none; min-height:0}
+  .gcard{box-shadow:none; border-color:#999; background:#fff}
+  .oitem{box-shadow:none}
+  .oitem .no{background:#666}
+}
+</style>
+</head>
+<body>
+<div class="deco" id="deco"></div>
+<div class="wrap">
+
+<header class="noprint">
+  <div class="htitle">🎲 두구두구 뽑기<small id="hsub">우리 반 랜덤 뽑기</small></div>
+  <div class="spacer"></div>
+  <button class="btn mini" id="btnSet">⚙️ 명단</button>
+</header>
+
+<div class="tabs noprint" id="tabs"></div>
+
+<div class="stage">
+  <div class="board" id="board">
+    <div class="confetti" id="conf"></div>
+  </div>
+</div>
+
+<div class="pool noprint" id="pool"></div>
+
+<div class="modal" id="mSet">
+  <div class="sheet">
+    <h3>⚙️ 우리 반 명단</h3>
+    <p class="hint">엑셀·한글에서 이름을 <b>복사해서 그대로 붙여넣으세요.</b><br>
+      줄바꿈·쉼표·번호(1. 김민준)가 섞여 있어도 알아서 정리합니다.</p>
+    <textarea id="inRoster" placeholder="김민준&#10;이서연&#10;박도윤&#10;…"></textarea>
+    <p class="hint" id="cnt">0명</p>
+
+    <div class="toggle" id="tgNoRepeat">
+      <div class="sw"><i></i></div>
+      <div>한 명 뽑기에서 <b>뽑힌 친구는 다시 안 뽑기</b></div>
+    </div>
+    <div class="toggle" id="tgAnimal">
+      <div class="sw"><i></i></div>
+      <div>이름 옆에 <b>동물 친구</b> 보여주기 🐻</div>
+    </div>
+
+    <div class="frow foot">
+      <button class="btn danger mini" id="btnWipe">전체 지우기</button>
+      <div class="spacer"></div>
+      <button class="btn" id="btnCancel">취소</button>
+      <button class="btn primary" id="btnSave">저장</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const KEY='pick_v1';
+const $=s=>document.querySelector(s);
+const ANIMALS=['🐻','🐰','🐥','🐱','🐼','🦊','🐨','🐸','🐯','🐶','🐷','🐵','🦁','🐮','🐔','🦄','🐧','🐢','🐙','🦉','🐝','🦋','🐬','🐳','🦔','🐹','🦒','🐴','🦘'];
+const GROUPICON=['🍓','🍋','🍇','🍑','🍏','🍊','🫐','🍉','🥝','🍒'];
+const MODES=[
+  {id:'one',  t:'🎯 한 명 뽑기'},
+  {id:'many', t:'✨ 여러 명 뽑기'},
+  {id:'pair', t:'👫 짝 만들기'},
+  {id:'group',t:'🧩 모둠 나누기'},
+  {id:'order',t:'🔢 순서 정하기'}
+];
+
+let S=normalize(load());
+let rolling=false;
+
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function normalize(o){
+  const s=Object.assign({roster:'', mode:'one', noRepeat:true, animal:true,
+    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count'},o||{});
+  s.off=s.off||{}; s.done=s.done||{};
+  return s;
+}
+function names(){
+  return S.roster.split(/[\n,\t]+/).map(t=>t.trim())
+    .map(t=>t.replace(/^\(?\d+\)?[.)\]]?\s*/,'').trim()).filter(Boolean);
+}
+const alive=()=>names().filter(n=>!S.off[n]);
+const ani=n=>{ const l=names(); const i=l.indexOf(n); return S.animal? (ANIMALS[(i<0?0:i)%ANIMALS.length]+' ') : ''; };
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ── 배경 ── */
+(function deco(){
+  const box=$('#deco'); const em=['⭐','🎈','🍀','🌈','✨','🎀','🧁','🐣'];
+  em.forEach((e,i)=>{ const s=document.createElement('span'); s.textContent=e;
+    s.style.left=(6+i*12)%92+'%'; s.style.top=(10+((i*29)%74))+'%';
+    s.style.setProperty('--r',(i%2?8:-8)+'deg'); s.style.animationDelay=(i*.7)+'s'; box.appendChild(s); });
+})();
+
+/* ── 탭 ── */
+function drawTabs(){
+  const box=$('#tabs'); box.innerHTML='';
+  MODES.forEach(m=>{
+    const b=document.createElement('button');
+    b.className='tab'+(S.mode===m.id?' on':''); b.textContent=m.t;
+    b.onclick=()=>{ if(rolling) return; S.mode=m.id; save(); drawTabs(); drawBoard(); };
+    box.appendChild(b);
+  });
+}
+
+/* ── 무대 ── */
+function drawBoard(html){
+  const b=$('#board');
+  b.innerHTML='<div class="confetti" id="conf"></div>';
+  const box=document.createElement('div');
+  box.style.cssText='display:flex;flex-direction:column;align-items:center;gap:10px;width:100%';
+  b.appendChild(box);
+  if(html){ box.innerHTML=html; return box; }
+  const list=alive();
+  if(names().length<1){
+    box.innerHTML='<div class="mascot">🐣</div><div class="sayline">먼저 <b>⚙️ 명단</b> 에서 우리 반 이름을 붙여넣어 주세요!</div>';
+    return box;
+  }
+  if(S.mode==='one')   boardOne(box,list);
+  if(S.mode==='many')  boardMany(box,list);
+  if(S.mode==='pair')  boardPair(box,list);
+  if(S.mode==='group') boardGroup(box,list);
+  if(S.mode==='order') boardOrder(box,list);
+  return box;
+}
+function el(tag,cls,html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!==undefined)e.innerHTML=html; return e; }
+function ctl(box,items){ const c=el('div','ctl'); items.forEach(b=>c.appendChild(b)); box.appendChild(c); return c; }
+function mkBtn(txt,cls,fn){ const b=el('button','btn'+(cls?' '+cls:''),txt); b.onclick=fn; return b; }
+function counter(label,get,set,min,max){
+  const wrap=el('div','numrow');
+  wrap.appendChild(el('span','',label));
+  const n=el('div','num');
+  const minus=el('button','','−'), val=el('b','',String(get())), plus=el('button','','＋');
+  minus.onclick=()=>{ set(Math.max(min,get()-1)); val.textContent=get(); save(); };
+  plus.onclick =()=>{ set(Math.min(max,get()+1)); val.textContent=get(); save(); };
+  n.append(minus,val,plus); wrap.appendChild(n);
+  return wrap;
+}
+
+/* 1) 한 명 뽑기 */
+function boardOne(box,list){
+  const left=S.noRepeat? list.filter(n=>!S.done[n]) : list;
+  box.appendChild(el('div','mascot','🥁'));
+  const big=el('div','bigname','누구를 뽑을까?'); box.appendChild(big);
+  box.appendChild(el('div','sayline', S.noRepeat
+    ? ('아직 안 뽑은 친구 <b>'+left.length+'명</b> / 모두 '+list.length+'명')
+    : ('오늘 온 친구 <b>'+list.length+'명</b>')));
+  const go=mkBtn('🎲 뽑기!','primary',()=>rollOne(box,big));
+  const again=mkBtn('🔄 기록 지우기','mini',()=>{ S.done={}; save(); drawBoard(); drawPool(); });
+  if(!left.length){ big.textContent='모두 다 뽑았어요! 🎉'; go.disabled=true; }
+  ctl(box,[go,again]);
+  if(Object.keys(S.done).length){
+    box.appendChild(el('div','sayline','지금까지 뽑힌 친구'));
+    const p=el('div','picked');
+    Object.keys(S.done).forEach(n=>p.appendChild(el('span','ptag',ani(n)+esc(n))));
+    box.appendChild(p);
+  }
+}
+function rollOne(box,big){
+  const list=alive();
+  const pool=S.noRepeat? list.filter(n=>!S.done[n]) : list;
+  if(!pool.length) return;
+  const pick=pool[Math.floor(Math.random()*pool.length)];
+  rolling=true; big.classList.add('roll');
+  const mascot=box.querySelector('.mascot'); if(mascot) mascot.classList.add('roll');
+  let t=0, delay=55;
+  (function tick(){
+    big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…';
+    t+=delay; delay=t>900? delay*1.28 : delay;
+    if(delay<420 || t<1400) setTimeout(tick,delay);
+    else{
+      big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
+      big.textContent=ani(pick)+pick;
+      if(S.noRepeat){ S.done[pick]=1; save(); }
+      confetti(); rolling=false;
+      setTimeout(()=>{ drawPool(); },300);
+      const c=box.querySelector('.ctl');
+      if(c && S.noRepeat){ const s=box.querySelector('.sayline');
+        const left=alive().filter(n=>!S.done[n]).length;
+        if(s) s.innerHTML='아직 안 뽑은 친구 <b>'+left+'명</b> / 모두 '+alive().length+'명'; }
+    }
+  })();
+}
+
+/* 2) 여러 명 뽑기 */
+function boardMany(box,list){
+  box.appendChild(el('div','mascot','🎁'));
+  const res=el('div','picked'); const big=el('div','bigname','몇 명 뽑을까?');
+  box.appendChild(big); box.appendChild(res);
+  box.appendChild(counter('뽑을 사람', ()=>S.pickN, v=>S.pickN=v, 1, Math.max(1,list.length)));
+  ctl(box,[ mkBtn('🎲 뽑기!','primary',()=>{
+      const n=Math.min(S.pickN,list.length);
+      const out=shuffle(list.slice()).slice(0,n);
+      big.textContent=n+'명 뽑았어요!';
+      res.innerHTML=''; out.forEach((nm,i)=>setTimeout(()=>{
+        res.appendChild(el('span','ptag',ani(nm)+esc(nm))); if(i===out.length-1) confetti();
+      }, i*220));
+    }),
+    mkBtn('📋 복사','mini',()=>copy(Array.from(res.children).map(c=>c.textContent).join('\n')))
+  ]);
+}
+
+/* 3) 짝 만들기 */
+function boardPair(box,list){
+  box.appendChild(el('div','mascot','👫'));
+  const wrap=el('div','cards'); const big=el('div','bigname','짝을 만들어 볼까?');
+  box.appendChild(big); box.appendChild(wrap);
+  ctl(box,[ mkBtn('🎲 짝 만들기','primary',()=>{
+      if(list.length<2){ big.textContent='두 명 이상 있어야 해요 🙂'; return; }
+      const a=shuffle(list.slice()); const pairs=[];
+      while(a.length>=2) pairs.push([a.pop(),a.pop()]);
+      if(a.length) pairs[pairs.length-1].push(a.pop());     // 홀수 → 마지막 팀 3명
+      big.textContent='짝꿍 '+pairs.length+'팀!';
+      wrap.innerHTML='';
+      pairs.forEach((p,i)=>setTimeout(()=>{
+        wrap.appendChild(el('div','pairline', p.map(n=>ani(n)+esc(n)).join(' <span style="color:var(--pink)">♥</span> ')));
+        if(i===pairs.length-1) confetti();
+      }, i*160));
+    }),
+    mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent).join('\n'))),
+    mkBtn('🖨 인쇄','mini',()=>window.print())
+  ]);
+}
+
+/* 4) 모둠 나누기 */
+function boardGroup(box,list){
+  box.appendChild(el('div','mascot','🧩'));
+  const big=el('div','bigname','모둠을 나눠 볼까?'); const wrap=el('div','cards');
+  box.appendChild(big); box.appendChild(wrap);
+  const modeRow=el('div','numrow');
+  const bCount=mkBtn('모둠 수로','mini'+(S.groupBy==='count'?' pink':''),()=>{ S.groupBy='count'; save(); drawBoard(); });
+  const bSize =mkBtn('한 모둠 인원으로','mini'+(S.groupBy==='size'?' pink':''),()=>{ S.groupBy='size'; save(); drawBoard(); });
+  modeRow.append(bCount,bSize); box.appendChild(modeRow);
+  box.appendChild(counter(S.groupBy==='count'?'모둠 수':'한 모둠 인원', ()=>S.groupN, v=>S.groupN=v, 2, 10));
+  ctl(box,[ mkBtn('🎲 모둠 나누기','primary',()=>{
+      if(list.length<2){ big.textContent='두 명 이상 있어야 해요 🙂'; return; }
+      const a=shuffle(list.slice());
+      const k=S.groupBy==='count'? Math.min(S.groupN,a.length) : Math.max(1,Math.ceil(a.length/S.groupN));
+      const gs=Array.from({length:k},()=>[]);
+      a.forEach((n,i)=>gs[i%k].push(n));
+      big.textContent=k+'모둠으로 나눴어요!';
+      wrap.innerHTML='';
+      gs.forEach((g,i)=>setTimeout(()=>{
+        wrap.appendChild(el('div','gcard c'+(i%6),
+          '<h4>'+GROUPICON[i%GROUPICON.length]+' '+(i+1)+'모둠 <span style="color:var(--sub);font-size:.8em">'+g.length+'명</span></h4>'
+          +'<ul>'+g.map(n=>'<li>'+ani(n)+esc(n)+'</li>').join('')+'</ul>'));
+        if(i===gs.length-1) confetti();
+      }, i*170));
+    }),
+    mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent.replace(/\s+/g,' ')).join('\n'))),
+    mkBtn('🖨 인쇄','mini',()=>window.print())
+  ]);
+}
+
+/* 5) 순서 정하기 */
+function boardOrder(box,list){
+  box.appendChild(el('div','mascot','🔢'));
+  const big=el('div','bigname','순서를 정해 볼까?'); const wrap=el('div','orderlist');
+  box.appendChild(big); box.appendChild(wrap);
+  ctl(box,[ mkBtn('🎲 순서 정하기','primary',()=>{
+      const a=shuffle(list.slice());
+      big.textContent='발표 순서예요!';
+      wrap.innerHTML='';
+      a.forEach((n,i)=>setTimeout(()=>{
+        wrap.appendChild(el('div','oitem','<span class="no">'+(i+1)+'</span><span>'+ani(n)+esc(n)+'</span>'));
+        if(i===a.length-1) confetti();
+      }, i*110));
+    }),
+    mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map((c,i)=>(i+1)+'. '+c.textContent.replace(/^\d+/,'')).join('\n'))),
+    mkBtn('🖨 인쇄','mini',()=>window.print())
+  ]);
+}
+
+/* ── 색종이 ── */
+function confetti(){
+  const box=$('#conf'); if(!box) return;
+  const cols=['#ff8fb1','#ffc861','#5ecfb0','#8b6fd6','#6fc3f0','#ff9f68'];
+  for(let i=0;i<36;i++){
+    const p=document.createElement('i');
+    p.style.left=Math.random()*100+'%';
+    p.style.background=cols[i%cols.length];
+    p.style.animationDuration=(1.1+Math.random()*1.1)+'s';
+    p.style.animationDelay=(Math.random()*.35)+'s';
+    box.appendChild(p);
+    setTimeout(()=>p.remove(),2600);
+  }
+}
+async function copy(t){
+  if(!t.trim()){ alert('먼저 뽑아 주세요 🙂'); return; }
+  try{ await navigator.clipboard.writeText(t); alert('복사했어요! 📋'); }
+  catch(e){ alert('복사가 안 돼요 😢 화면을 길게 눌러 복사해 주세요.'); }
+}
+
+/* ── 명단 ── */
+function drawPool(){
+  const box=$('#pool'); const list=names();
+  if(!list.length){ box.innerHTML=''; return; }
+  const offN=list.filter(n=>S.off[n]).length;
+  box.innerHTML='<h3>우리 반 <span style="color:var(--grape-d)">'+(list.length-offN)+'명</span>'
+    +(offN?' <span style="color:var(--sub);font-size:.85em">· 오늘 빠짐 '+offN+'명</span>':'')+'</h3>'
+    +'<p class="hint">오늘 안 온 친구는 <b>이름을 눌러</b> 빼 두세요. 분홍 테두리는 <b>이미 뽑힌 친구</b>예요.</p>'
+    +'<div class="chips" id="chips"></div>';
+  const chips=$('#chips');
+  list.forEach(n=>{
+    const b=document.createElement('button');
+    b.className='chip'+(S.off[n]?' off':'')+(S.done[n]?' done':'');
+    b.textContent=ani(n)+n;
+    b.onclick=()=>{ if(S.off[n]) delete S.off[n]; else S.off[n]=1; save(); drawPool(); drawBoard(); };
+    chips.appendChild(b);
+  });
+}
+
+/* ── 설정 ── */
+$('#btnSet').onclick=()=>{
+  $('#inRoster').value=S.roster;
+  $('#cnt').textContent=names().length+'명';
+  $('#tgNoRepeat').querySelector('.sw').classList.toggle('on',!!S.noRepeat);
+  $('#tgAnimal').querySelector('.sw').classList.toggle('on',!!S.animal);
+  $('#mSet').classList.add('on');
+};
+$('#inRoster').oninput=()=>{
+  const n=$('#inRoster').value.split(/[\n,\t]+/).map(t=>t.trim()).filter(Boolean).length;
+  $('#cnt').textContent=n+'명';
+};
+$('#tgNoRepeat').onclick=()=>$('#tgNoRepeat').querySelector('.sw').classList.toggle('on');
+$('#tgAnimal').onclick=()=>$('#tgAnimal').querySelector('.sw').classList.toggle('on');
+$('#btnCancel').onclick=()=>{ S=normalize(load()); $('#mSet').classList.remove('on'); drawTabs(); drawBoard(); drawPool(); };
+$('#btnSave').onclick=()=>{
+  S.roster=$('#inRoster').value;
+  S.noRepeat=$('#tgNoRepeat').querySelector('.sw').classList.contains('on');
+  S.animal=$('#tgAnimal').querySelector('.sw').classList.contains('on');
+  const keep=new Set(names());
+  Object.keys(S.off).forEach(k=>{ if(!keep.has(k)) delete S.off[k]; });
+  Object.keys(S.done).forEach(k=>{ if(!keep.has(k)) delete S.done[k]; });
+  save(); $('#mSet').classList.remove('on'); drawBoard(); drawPool();
+};
+$('#btnWipe').onclick=()=>{
+  if(!confirm('정말 모두 지울까요?\n명단과 뽑은 기록이 사라져요.')) return;
+  S=normalize({}); save(); $('#mSet').classList.remove('on'); drawTabs(); drawBoard(); drawPool();
+};
+$('#mSet').addEventListener('click',e=>{ if(e.target===$('#mSet')) $('#btnCancel').click(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('#mSet').classList.remove('on'); });
+
+drawTabs(); drawBoard(); drawPool();
+if(!names().length) $('#btnSet').click();
+</script>
+</body>
+</html>
