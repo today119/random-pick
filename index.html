@@ -227,6 +227,7 @@ function ac(){
       MG=AC.createGain(); MG.gain.value=VOLS[S.vol]||VOLS.mid; MG.connect(AC.destination);
     }
     if(AC.state==='suspended') AC.resume();
+    if(MG) MG.gain.value=VOLS[S.vol]||VOLS.mid;      // 소리 낼 때마다 지금 크기로 맞춤
   }catch(e){ return null; }
   return AC;
 }
@@ -556,8 +557,8 @@ function drawVol(){
   [['low','🔈 작게'],['mid','🔉 보통'],['high','🔊 크게']].forEach(([k,t])=>{
     const b=document.createElement('button');
     b.className='btn mini'+(S.vol===k?' pink':''); b.textContent=t;
-    b.onclick=()=>{ S.vol=k; save(); setVol(); drawVol();
-      if(S.sound){ ac(); tone(880,.12,'triangle',.26); tone(1174.66,.16,'triangle',.24,.1); } };
+    b.onclick=()=>{ S.vol=k; save(); drawVol();
+      if(S.sound){ ac(); setVol(); tone(880,.12,'triangle',.26); tone(1174.66,.16,'triangle',.24,.1); } };
     box.appendChild(b);
   });
 }
