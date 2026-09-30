@@ -197,7 +197,7 @@ function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function normalize(o){
   const s=Object.assign({roster:'', mode:'one', noRepeat:true, animal:true,
-    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count'},o||{});
+    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio'},o||{});
   s.off=s.off||{}; s.done=s.done||{};
   return s;
 }
@@ -337,17 +337,36 @@ function boardMany(box,list){
 /* 3) 짝 만들기 */
 function boardPair(box,list){
   box.appendChild(el('div','mascot','👫'));
-  const wrap=el('div','cards'); const big=el('div','bigname','짝을 만들어 볼까?');
+  const big=el('div','bigname','짝을 만들어 볼까?'); const wrap=el('div','cards');
   box.appendChild(big); box.appendChild(wrap);
+
+  // 홀수일 때 어떻게 할지
+  const odd=el('div','numrow');
+  odd.appendChild(el('span','','사람이 홀수면?'));
+  const bTrio=mkBtn('마지막 팀 3명','mini'+(S.oddMode==='trio'?' pink':''),()=>{ S.oddMode='trio'; save(); drawBoard(); });
+  const bSolo=mkBtn('한 명은 혼자','mini'+(S.oddMode==='solo'?' pink':''),()=>{ S.oddMode='solo'; save(); drawBoard(); });
+  odd.append(bTrio,bSolo); box.appendChild(odd);
+
   ctl(box,[ mkBtn('🎲 짝 만들기','primary',()=>{
       if(list.length<2){ big.textContent='두 명 이상 있어야 해요 🙂'; return; }
       const a=shuffle(list.slice()); const pairs=[];
       while(a.length>=2) pairs.push([a.pop(),a.pop()]);
-      if(a.length) pairs[pairs.length-1].push(a.pop());     // 홀수 → 마지막 팀 3명
-      big.textContent='짝꿍 '+pairs.length+'팀!';
+      if(a.length){                                  // 홀수 한 명 남았을 때
+        if(S.oddMode==='solo' || !pairs.length) pairs.push([a.pop()]);
+        else pairs[pairs.length-1].push(a.pop());
+      }
+      const solo=pairs.filter(p=>p.length===1).length;
+      const trio=pairs.filter(p=>p.length===3).length;
+      big.textContent='짝꿍 '+(pairs.length-solo)+'팀'
+        +(trio?' (한 팀은 3명)':'')+(solo?' + 혼자 '+solo+'명':'')+'!';
       wrap.innerHTML='';
       pairs.forEach((p,i)=>setTimeout(()=>{
-        wrap.appendChild(el('div','pairline', p.map(n=>ani(n)+esc(n)).join(' <span style="color:var(--pink)">♥</span> ')));
+        const line=p.length===1
+          ? '🙋 '+ani(p[0])+esc(p[0])+' <span style="color:var(--sub);font-size:.72em">혼자</span>'
+          : p.map(n=>ani(n)+esc(n)).join(' <span style="color:var(--pink)">♥</span> ');
+        const e=el('div','pairline',line);
+        if(p.length===1) e.style.borderColor='var(--sun)';
+        wrap.appendChild(e);
         if(i===pairs.length-1) confetti();
       }, i*160));
     }),
