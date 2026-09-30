@@ -137,6 +137,7 @@ textarea{width:100%; min-height:30vh; font-family:inherit; font-size:clamp(16px,
 <header class="noprint">
   <div class="htitle">🎲 두구두구 뽑기<small id="hsub">우리 반 랜덤 뽑기</small></div>
   <div class="spacer"></div>
+  <button class="btn mini" id="btnSound" title="소리 켜기/끄기">🔊</button>
   <button class="btn mini" id="btnSet">⚙️ 명단</button>
 </header>
 
@@ -165,6 +166,10 @@ textarea{width:100%; min-height:30vh; font-family:inherit; font-size:clamp(16px,
     <div class="toggle" id="tgAnimal">
       <div class="sw"><i></i></div>
       <div>이름 옆에 <b>동물 친구</b> 보여주기 🐻</div>
+    </div>
+    <div class="toggle" id="tgSound">
+      <div class="sw"><i></i></div>
+      <div>두구두구 <b>소리</b> 켜기 🥁</div>
     </div>
 
     <div class="frow foot">
@@ -197,7 +202,7 @@ function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function normalize(o){
   const s=Object.assign({roster:'', mode:'one', noRepeat:true, animal:true,
-    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio'},o||{});
+    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio', sound:true},o||{});
   s.off=s.off||{}; s.done=s.done||{};
   return s;
 }
@@ -207,6 +212,49 @@ function names(){
 }
 const alive=()=>names().filter(n=>!S.off[n]);
 const ani=n=>{ const l=names(); const i=l.indexOf(n); return S.animal? (ANIMALS[(i<0?0:i)%ANIMALS.length]+' ') : ''; };
+/* ══ 소리 (파일 없이 그때그때 만들어 냄) ══ */
+let AC=null;
+function ac(){
+  if(!S.sound) return null;
+  try{
+    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended') AC.resume();
+  }catch(e){ return null; }
+  return AC;
+}
+function tone(freq,dur,type,vol,delay,slideTo){
+  const c=ac(); if(!c) return;
+  const t0=c.currentTime+(delay||0);
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'triangle'; o.frequency.setValueAtTime(freq,t0);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t0+dur);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol||.12,t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+0.02);
+}
+function drumTap(vol){
+  const c=ac(); if(!c) return;
+  const t0=c.currentTime, len=Math.floor(c.sampleRate*0.06);
+  const buf=c.createBuffer(1,len,c.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.2);
+  const src=c.createBufferSource(); src.buffer=buf;
+  const hp=c.createBiquadFilter(); hp.type='bandpass'; hp.frequency.value=1800; hp.Q.value=.8;
+  const g=c.createGain(); g.gain.value=vol||.16;
+  src.connect(hp).connect(g).connect(c.destination); src.start(t0);
+}
+/* 두구두구 — 갈수록 높아지는 긴장감 */
+function sfxRoll(p){ drumTap(.10+p*.10); tone(420+p*520,.05,'square',.05); }
+/* 짜잔! */
+function sfxWin(){
+  const c=ac(); if(!c) return;
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,.22,'triangle',.16,i*0.085));
+  tone(1567.98,.5,'sine',.10,.34);
+  drumTap(.2);
+}
+/* 카드가 하나씩 나올 때 */
+function sfxPop(i){ tone(520+((i||0)%6)*70,.09,'sine',.09); }
+
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
@@ -305,7 +353,7 @@ function rollOne(box,big){
     big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
     big.textContent=ani(pick)+pick;
     if(S.noRepeat){ S.done[pick]=1; save(); }
-    confetti(); rolling=false;
+    confetti(); sfxWin(); rolling=false;
     const s=box.querySelector('.sayline');
     if(s && S.noRepeat){
       const left=alive().filter(n=>!S.done[n]).length;
@@ -317,7 +365,7 @@ function rollOne(box,big){
     if(over) return;
     const p=Math.min(1,(now-t0)/DUR);
     const gap=50+300*p*p;                       // 갈수록 천천히 두구두구
-    if(now-last>=gap){ last=now; big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…'; }
+    if(now-last>=gap){ last=now; big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…'; sfxRoll(p); }
     if(p<1) requestAnimationFrame(frame); else finish();
   }
   requestAnimationFrame(frame);
@@ -335,7 +383,8 @@ function boardMany(box,list){
       const out=shuffle(list.slice()).slice(0,n);
       big.textContent=n+'명 뽑았어요!';
       res.innerHTML=''; out.forEach((nm,i)=>setTimeout(()=>{
-        res.appendChild(el('span','ptag',ani(nm)+esc(nm))); if(i===out.length-1) confetti();
+        res.appendChild(el('span','ptag',ani(nm)+esc(nm))); sfxPop(i);
+        if(i===out.length-1){ confetti(); sfxWin(); }
       }, i*220));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(res.children).map(c=>c.textContent).join('\n'))),
@@ -376,8 +425,8 @@ function boardPair(box,list){
           : p.map(n=>ani(n)+esc(n)).join(' <span style="color:var(--pink)">♥</span> ');
         const e=el('div','pairline',line);
         if(p.length===1) e.style.borderColor='var(--sun)';
-        wrap.appendChild(e);
-        if(i===pairs.length-1) confetti();
+        wrap.appendChild(e); sfxPop(i);
+        if(i===pairs.length-1){ confetti(); sfxWin(); }
       }, i*160));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent).join('\n'))),
@@ -409,7 +458,8 @@ function boardGroup(box,list){
         wrap.appendChild(el('div','gcard c'+(i%6),
           '<h4>'+GROUPICON[i%GROUPICON.length]+' '+(i+1)+'모둠 <span style="color:var(--sub);font-size:.8em">'+g.length+'명</span></h4>'
           +'<ul>'+g.map(n=>'<li>'+ani(n)+esc(n)+'</li>').join('')+'</ul>'));
-        if(i===gs.length-1) confetti();
+        sfxPop(i);
+        if(i===gs.length-1){ confetti(); sfxWin(); }
       }, i*170));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent.replace(/\s+/g,' ')).join('\n'))),
@@ -430,7 +480,8 @@ function boardOrder(box,list){
       wrap.innerHTML='';
       a.forEach((n,i)=>setTimeout(()=>{
         wrap.appendChild(el('div','oitem','<span class="no">'+(i+1)+'</span><span>'+ani(n)+esc(n)+'</span>'));
-        if(i===a.length-1) confetti();
+        sfxPop(i);
+        if(i===a.length-1){ confetti(); sfxWin(); }
       }, i*110));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map((c,i)=>(i+1)+'. '+c.textContent.replace(/^\d+/,'')).join('\n'))),
@@ -480,11 +531,18 @@ function drawPool(){
 }
 
 /* ── 설정 ── */
+function drawSound(){ $('#btnSound').textContent=S.sound?'🔊':'🔇'; }
+$('#btnSound').onclick=()=>{
+  S.sound=!S.sound; save(); drawSound();
+  if(S.sound){ tone(880,.12,'triangle',.14); tone(1174.66,.16,'triangle',.12,.1); }
+};
+drawSound();
 $('#btnSet').onclick=()=>{
   $('#inRoster').value=S.roster;
   $('#cnt').textContent=names().length+'명';
   $('#tgNoRepeat').querySelector('.sw').classList.toggle('on',!!S.noRepeat);
   $('#tgAnimal').querySelector('.sw').classList.toggle('on',!!S.animal);
+  $('#tgSound').querySelector('.sw').classList.toggle('on',!!S.sound);
   $('#mSet').classList.add('on');
 };
 $('#inRoster').oninput=()=>{
@@ -493,19 +551,21 @@ $('#inRoster').oninput=()=>{
 };
 $('#tgNoRepeat').onclick=()=>$('#tgNoRepeat').querySelector('.sw').classList.toggle('on');
 $('#tgAnimal').onclick=()=>$('#tgAnimal').querySelector('.sw').classList.toggle('on');
-$('#btnCancel').onclick=()=>{ S=normalize(load()); $('#mSet').classList.remove('on'); drawTabs(); drawBoard(); drawPool(); };
+$('#tgSound').onclick=()=>$('#tgSound').querySelector('.sw').classList.toggle('on');
+$('#btnCancel').onclick=()=>{ S=normalize(load()); drawSound(); $('#mSet').classList.remove('on'); drawTabs(); drawBoard(); drawPool(); };
 $('#btnSave').onclick=()=>{
   S.roster=$('#inRoster').value;
   S.noRepeat=$('#tgNoRepeat').querySelector('.sw').classList.contains('on');
   S.animal=$('#tgAnimal').querySelector('.sw').classList.contains('on');
+  S.sound=$('#tgSound').querySelector('.sw').classList.contains('on');
   const keep=new Set(names());
   Object.keys(S.off).forEach(k=>{ if(!keep.has(k)) delete S.off[k]; });
   Object.keys(S.done).forEach(k=>{ if(!keep.has(k)) delete S.done[k]; });
-  save(); $('#mSet').classList.remove('on'); drawBoard(); drawPool();
+  save(); drawSound(); $('#mSet').classList.remove('on'); drawBoard(); drawPool();
 };
 $('#btnWipe').onclick=()=>{
   if(!confirm('정말 모두 지울까요?\n명단과 뽑은 기록이 사라져요.')) return;
-  S=normalize({}); save(); $('#mSet').classList.remove('on'); drawTabs(); drawBoard(); drawPool();
+  S=normalize({}); save(); drawSound(); $('#mSet').classList.remove('on'); drawTabs(); drawBoard(); drawPool();
 };
 $('#mSet').addEventListener('click',e=>{ if(e.target===$('#mSet')) $('#btnCancel').click(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('#mSet').classList.remove('on'); });
