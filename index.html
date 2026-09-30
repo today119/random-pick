@@ -320,7 +320,7 @@ function rollOne(box,big){
 function boardMany(box,list){
   box.appendChild(el('div','mascot','🎁'));
   const res=el('div','picked'); const big=el('div','bigname','몇 명 뽑을까?');
-  box.appendChild(big); box.appendChild(res);
+  box.appendChild(big);
   box.appendChild(counter('뽑을 사람', ()=>S.pickN, v=>S.pickN=v, 1, Math.max(1,list.length)));
   ctl(box,[ mkBtn('🎲 뽑기!','primary',()=>{
       const n=Math.min(S.pickN,list.length);
@@ -332,13 +332,14 @@ function boardMany(box,list){
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(res.children).map(c=>c.textContent).join('\n')))
   ]);
+  box.appendChild(res);
 }
 
 /* 3) 짝 만들기 */
 function boardPair(box,list){
   box.appendChild(el('div','mascot','👫'));
   const big=el('div','bigname','짝을 만들어 볼까?'); const wrap=el('div','cards');
-  box.appendChild(big); box.appendChild(wrap);
+  box.appendChild(big);
 
   // 홀수일 때 어떻게 할지
   const odd=el('div','numrow');
@@ -373,13 +374,14 @@ function boardPair(box,list){
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent).join('\n'))),
     mkBtn('🖨 인쇄','mini',()=>window.print())
   ]);
+  box.appendChild(wrap);
 }
 
 /* 4) 모둠 나누기 */
 function boardGroup(box,list){
   box.appendChild(el('div','mascot','🧩'));
   const big=el('div','bigname','모둠을 나눠 볼까?'); const wrap=el('div','cards');
-  box.appendChild(big); box.appendChild(wrap);
+  box.appendChild(big);
   const modeRow=el('div','numrow');
   const bCount=mkBtn('모둠 수로','mini'+(S.groupBy==='count'?' pink':''),()=>{ S.groupBy='count'; save(); drawBoard(); });
   const bSize =mkBtn('한 모둠 인원으로','mini'+(S.groupBy==='size'?' pink':''),()=>{ S.groupBy='size'; save(); drawBoard(); });
@@ -403,13 +405,14 @@ function boardGroup(box,list){
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent.replace(/\s+/g,' ')).join('\n'))),
     mkBtn('🖨 인쇄','mini',()=>window.print())
   ]);
+  box.appendChild(wrap);
 }
 
 /* 5) 순서 정하기 */
 function boardOrder(box,list){
   box.appendChild(el('div','mascot','🔢'));
   const big=el('div','bigname','순서를 정해 볼까?'); const wrap=el('div','orderlist');
-  box.appendChild(big); box.appendChild(wrap);
+  box.appendChild(big);
   ctl(box,[ mkBtn('🎲 순서 정하기','primary',()=>{
       const a=shuffle(list.slice());
       big.textContent='발표 순서예요!';
@@ -422,6 +425,7 @@ function boardOrder(box,list){
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map((c,i)=>(i+1)+'. '+c.textContent.replace(/^\d+/,'')).join('\n'))),
     mkBtn('🖨 인쇄','mini',()=>window.print())
   ]);
+  box.appendChild(wrap);
 }
 
 /* ── 색종이 ── */
