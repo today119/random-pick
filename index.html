@@ -348,6 +348,7 @@ function boardOne(box,list){
 }
 function rollOne(box,big){
   if(rolling) return;
+  ac();                       // 누른 그 순간에 소리를 깨워 둔다(모바일 대응)
   const list=alive();
   const pool=S.noRepeat? list.filter(n=>!S.done[n]) : list;
   if(!pool.length) return;
@@ -387,6 +388,7 @@ function boardMany(box,list){
   box.appendChild(big);
   box.appendChild(counter('뽑을 사람', ()=>S.pickN, v=>S.pickN=v, 1, Math.max(1,list.length)));
   ctl(box,[ mkBtn('🎲 뽑기!','primary',()=>{
+      ac();
       const n=Math.min(S.pickN,list.length);
       const out=shuffle(list.slice()).slice(0,n);
       big.textContent=n+'명 뽑았어요!';
@@ -415,6 +417,7 @@ function boardPair(box,list){
   odd.append(bTrio,bSolo); box.appendChild(odd);
 
   ctl(box,[ mkBtn('🎲 짝 만들기','primary',()=>{
+      ac();
       if(list.length<2){ big.textContent='두 명 이상 있어야 해요 🙂'; return; }
       const a=shuffle(list.slice()); const pairs=[];
       while(a.length>=2) pairs.push([a.pop(),a.pop()]);
@@ -455,6 +458,7 @@ function boardGroup(box,list){
   modeRow.append(bCount,bSize); box.appendChild(modeRow);
   box.appendChild(counter(S.groupBy==='count'?'모둠 수':'한 모둠 인원', ()=>S.groupN, v=>S.groupN=v, 2, 10));
   ctl(box,[ mkBtn('🎲 모둠 나누기','primary',()=>{
+      ac();
       if(list.length<2){ big.textContent='두 명 이상 있어야 해요 🙂'; return; }
       const a=shuffle(list.slice());
       const k=S.groupBy==='count'? Math.min(S.groupN,a.length) : Math.max(1,Math.ceil(a.length/S.groupN));
@@ -483,6 +487,7 @@ function boardOrder(box,list){
   const big=el('div','bigname','순서를 정해 볼까?'); const wrap=el('div','orderlist');
   box.appendChild(big);
   ctl(box,[ mkBtn('🎲 순서 정하기','primary',()=>{
+      ac();
       const a=shuffle(list.slice());
       big.textContent='발표 순서예요!';
       wrap.innerHTML='';
