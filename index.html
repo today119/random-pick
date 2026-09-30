@@ -251,6 +251,15 @@ function drawBoard(html){
 }
 function el(tag,cls,html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!==undefined)e.innerHTML=html; return e; }
 function ctl(box,items){ const c=el('div','ctl'); items.forEach(b=>c.appendChild(b)); box.appendChild(c); return c; }
+function freshBtn(){
+  return mkBtn('🔄 새로 뽑기','mini',()=>{
+    if(rolling) return;
+    if(S.mode==='one' && Object.keys(S.done).length
+       && !confirm('뽑은 기록을 지우고 처음부터 다시 뽑을까요?\n(명단은 그대로예요)')) return;
+    if(S.mode==='one'){ S.done={}; save(); }
+    drawBoard(); drawPool();
+  });
+}
 function mkBtn(txt,cls,fn){ const b=el('button','btn'+(cls?' '+cls:''),txt); b.onclick=fn; return b; }
 function counter(label,get,set,min,max){
   const wrap=el('div','numrow');
@@ -272,9 +281,8 @@ function boardOne(box,list){
     ? ('아직 안 뽑은 친구 <b>'+left.length+'명</b> / 모두 '+list.length+'명')
     : ('오늘 온 친구 <b>'+list.length+'명</b>')));
   const go=mkBtn('🎲 뽑기!','primary',()=>rollOne(box,big));
-  const again=mkBtn('🔄 기록 지우기','mini',()=>{ S.done={}; save(); drawBoard(); drawPool(); });
   if(!left.length){ big.textContent='모두 다 뽑았어요! 🎉'; go.disabled=true; }
-  ctl(box,[go,again]);
+  ctl(box,[go,freshBtn()]);
   if(Object.keys(S.done).length){
     box.appendChild(el('div','sayline','지금까지 뽑힌 친구'));
     const p=el('div','picked');
@@ -330,7 +338,8 @@ function boardMany(box,list){
         res.appendChild(el('span','ptag',ani(nm)+esc(nm))); if(i===out.length-1) confetti();
       }, i*220));
     }),
-    mkBtn('📋 복사','mini',()=>copy(Array.from(res.children).map(c=>c.textContent).join('\n')))
+    mkBtn('📋 복사','mini',()=>copy(Array.from(res.children).map(c=>c.textContent).join('\n'))),
+    freshBtn()
   ]);
   box.appendChild(res);
 }
@@ -372,7 +381,8 @@ function boardPair(box,list){
       }, i*160));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent).join('\n'))),
-    mkBtn('🖨 인쇄','mini',()=>window.print())
+    mkBtn('🖨 인쇄','mini',()=>window.print()),
+    freshBtn()
   ]);
   box.appendChild(wrap);
 }
@@ -403,7 +413,8 @@ function boardGroup(box,list){
       }, i*170));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map(c=>c.textContent.replace(/\s+/g,' ')).join('\n'))),
-    mkBtn('🖨 인쇄','mini',()=>window.print())
+    mkBtn('🖨 인쇄','mini',()=>window.print()),
+    freshBtn()
   ]);
   box.appendChild(wrap);
 }
@@ -423,7 +434,8 @@ function boardOrder(box,list){
       }, i*110));
     }),
     mkBtn('📋 복사','mini',()=>copy(Array.from(wrap.children).map((c,i)=>(i+1)+'. '+c.textContent.replace(/^\d+/,'')).join('\n'))),
-    mkBtn('🖨 인쇄','mini',()=>window.print())
+    mkBtn('🖨 인쇄','mini',()=>window.print()),
+    freshBtn()
   ]);
   box.appendChild(wrap);
 }
