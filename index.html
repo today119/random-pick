@@ -243,8 +243,16 @@ function drumTap(vol){
   const g=c.createGain(); g.gain.value=vol||.16;
   src.connect(hp).connect(g).connect(c.destination); src.start(t0);
 }
-/* 두구두구 — 갈수록 높아지는 긴장감 */
-function sfxRoll(p){ drumTap(.10+p*.10); tone(420+p*520,.05,'square',.05); }
+/* 두구두구 — 드럼 + 계단처럼 올라가는 장난기 있는 가락 */
+const SCALE=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.51];   // 도레미솔라 5음계
+let rollStep=0;
+function sfxRoll(p){
+  drumTap(.09+p*.11);
+  const up=Math.min(SCALE.length-1, Math.floor(p*SCALE.length));
+  const n=SCALE[(rollStep++)%3===0? up : Math.max(0,up-2)];
+  tone(n,.07,'square',.06);
+  if(p>.72) tone(n/2,.09,'triangle',.05,.01);    // 마지막엔 낮은 음을 겹쳐 두근두근
+}
 /* 짜잔! */
 function sfxWin(){
   const c=ac(); if(!c) return;
@@ -344,7 +352,7 @@ function rollOne(box,big){
   const pool=S.noRepeat? list.filter(n=>!S.done[n]) : list;
   if(!pool.length) return;
   const pick=pool[Math.floor(Math.random()*pool.length)];
-  rolling=true; big.classList.add('roll');
+  rolling=true; rollStep=0; big.classList.add('roll');
   const mascot=box.querySelector('.mascot'); if(mascot) mascot.classList.add('roll');
 
   const DUR=1600, t0=performance.now(); let last=0, over=false;
