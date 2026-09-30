@@ -283,29 +283,32 @@ function boardOne(box,list){
   }
 }
 function rollOne(box,big){
+  if(rolling) return;
   const list=alive();
   const pool=S.noRepeat? list.filter(n=>!S.done[n]) : list;
   if(!pool.length) return;
   const pick=pool[Math.floor(Math.random()*pool.length)];
   rolling=true; big.classList.add('roll');
   const mascot=box.querySelector('.mascot'); if(mascot) mascot.classList.add('roll');
-  let t=0, delay=55;
-  (function tick(){
-    big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…';
-    t+=delay; delay=t>600? delay*1.28 : delay;
-    if(delay<300 || t<1000) setTimeout(tick,delay);
-    else{
-      big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
-      big.textContent=ani(pick)+pick;
-      if(S.noRepeat){ S.done[pick]=1; save(); }
-      confetti(); rolling=false;
-      setTimeout(()=>{ drawPool(); },300);
-      const c=box.querySelector('.ctl');
-      if(c && S.noRepeat){ const s=box.querySelector('.sayline');
-        const left=alive().filter(n=>!S.done[n]).length;
-        if(s) s.innerHTML='아직 안 뽑은 친구 <b>'+left+'명</b> / 모두 '+alive().length+'명'; }
+
+  const DUR=1600, t0=performance.now(); let last=0;
+  function frame(now){
+    const p=Math.min(1,(now-t0)/DUR);
+    const gap=50+300*p*p;                       // 갈수록 천천히 두구두구
+    if(now-last>=gap){ last=now; big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…'; }
+    if(p<1){ requestAnimationFrame(frame); return; }
+    big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
+    big.textContent=ani(pick)+pick;
+    if(S.noRepeat){ S.done[pick]=1; save(); }
+    confetti(); rolling=false;
+    const s=box.querySelector('.sayline');
+    if(s && S.noRepeat){
+      const left=alive().filter(n=>!S.done[n]).length;
+      s.innerHTML='아직 안 뽑은 친구 <b>'+left+'명</b> / 모두 '+alive().length+'명';
     }
-  })();
+    setTimeout(drawPool,300);
+  }
+  requestAnimationFrame(frame);
 }
 
 /* 2) 여러 명 뽑기 */
