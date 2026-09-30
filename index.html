@@ -362,7 +362,7 @@ function boardPair(box,list){
       wrap.innerHTML='';
       pairs.forEach((p,i)=>setTimeout(()=>{
         const line=p.length===1
-          ? '🙋 '+ani(p[0])+esc(p[0])+' <span style="color:var(--sub);font-size:.72em">혼자</span>'
+          ? (S.animal?ani(p[0]):'🙋 ')+esc(p[0])+' <span style="color:var(--sub);font-size:.72em">혼자</span>'
           : p.map(n=>ani(n)+esc(n)).join(' <span style="color:var(--pink)">♥</span> ');
         const e=el('div','pairline',line);
         if(p.length===1) e.style.borderColor='var(--sun)';
