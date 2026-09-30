@@ -435,12 +435,11 @@ function boardPair(box,list){
       }
       const solo=pairs.filter(p=>p.length===1).length;
       const trio=pairs.filter(p=>p.length===3).length;
-      big.textContent='짝꿍 '+(pairs.length-solo)+'팀'
-        +(trio?' (한 팀은 3명)':'')+(solo?' + 혼자 '+solo+'명':'')+'!';
+      big.textContent='짝꿍 '+(pairs.length-solo)+'팀'+(trio?' (한 팀은 3명)':'')+'!';
       wrap.innerHTML='';
       pairs.forEach((p,i)=>setTimeout(()=>{
         const line=p.length===1
-          ? (S.animal?ani(p[0]):'🙋 ')+esc(p[0])+' <span style="color:var(--sub);font-size:.72em">혼자</span>'
+          ? (S.animal?ani(p[0]):'⭐ ')+esc(p[0])
           : p.map(n=>ani(n)+esc(n)).join(' <span style="color:var(--pink)">♥</span> ');
         const e=el('div','pairline',line);
         if(p.length===1) e.style.borderColor='var(--sun)';
