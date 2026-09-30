@@ -217,7 +217,7 @@ const ani=n=>{ const l=names(); const i=l.indexOf(n); return S.animal? (ANIMALS[
 /* ══ 소리 (파일 없이 그때그때 만들어 냄) ══ */
 let AC=null, MG=null;
 const VOLS={low:.6, mid:1.25, high:2.1};
-function setVol(){ if(MG&&AC) MG.gain.setValueAtTime(VOLS[S.vol]||VOLS.mid, AC.currentTime); }
+function setVol(){ if(MG) MG.gain.value=VOLS[S.vol]||VOLS.mid; }
 function out(){ return MG||(AC?AC.destination:null); }
 function ac(){
   if(!S.sound) return null;
