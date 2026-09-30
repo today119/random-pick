@@ -291,12 +291,9 @@ function rollOne(box,big){
   rolling=true; big.classList.add('roll');
   const mascot=box.querySelector('.mascot'); if(mascot) mascot.classList.add('roll');
 
-  const DUR=1600, t0=performance.now(); let last=0;
-  function frame(now){
-    const p=Math.min(1,(now-t0)/DUR);
-    const gap=50+300*p*p;                       // 갈수록 천천히 두구두구
-    if(now-last>=gap){ last=now; big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…'; }
-    if(p<1){ requestAnimationFrame(frame); return; }
+  const DUR=1600, t0=performance.now(); let last=0, over=false;
+  function finish(){
+    if(over) return; over=true;
     big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
     big.textContent=ani(pick)+pick;
     if(S.noRepeat){ S.done[pick]=1; save(); }
@@ -308,7 +305,15 @@ function rollOne(box,big){
     }
     setTimeout(drawPool,300);
   }
+  function frame(now){
+    if(over) return;
+    const p=Math.min(1,(now-t0)/DUR);
+    const gap=50+300*p*p;                       // 갈수록 천천히 두구두구
+    if(now-last>=gap){ last=now; big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…'; }
+    if(p<1) requestAnimationFrame(frame); else finish();
+  }
   requestAnimationFrame(frame);
+  setTimeout(finish,DUR+500);   // 화면이 뒤에 있어 애니메이션이 멈춰도 결과는 나오게
 }
 
 /* 2) 여러 명 뽑기 */
