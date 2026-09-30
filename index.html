@@ -171,6 +171,8 @@ textarea{width:100%; min-height:30vh; font-family:inherit; font-size:clamp(16px,
       <div class="sw"><i></i></div>
       <div>두구두구 <b>소리</b> 켜기 🥁</div>
     </div>
+    <label class="f">소리 크기</label>
+    <div class="frow" id="volRow" style="margin-top:.2em"></div>
 
     <div class="frow foot">
       <button class="btn danger mini" id="btnWipe">전체 지우기</button>
@@ -202,7 +204,7 @@ function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function normalize(o){
   const s=Object.assign({roster:'', mode:'one', noRepeat:true, animal:true,
-    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio', sound:true},o||{});
+    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio', sound:true, vol:'mid'},o||{});
   s.off=s.off||{}; s.done=s.done||{};
   return s;
 }
@@ -213,11 +215,17 @@ function names(){
 const alive=()=>names().filter(n=>!S.off[n]);
 const ani=n=>{ const l=names(); const i=l.indexOf(n); return S.animal? (ANIMALS[(i<0?0:i)%ANIMALS.length]+' ') : ''; };
 /* ══ 소리 (파일 없이 그때그때 만들어 냄) ══ */
-let AC=null;
+let AC=null, MG=null;
+const VOLS={low:.6, mid:1.25, high:2.1};
+function setVol(){ if(MG&&AC) MG.gain.setValueAtTime(VOLS[S.vol]||VOLS.mid, AC.currentTime); }
+function out(){ return MG||(AC?AC.destination:null); }
 function ac(){
   if(!S.sound) return null;
   try{
-    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    if(!AC){
+      AC=new (window.AudioContext||window.webkitAudioContext)();
+      MG=AC.createGain(); MG.gain.value=VOLS[S.vol]||VOLS.mid; MG.connect(AC.destination);
+    }
     if(AC.state==='suspended') AC.resume();
   }catch(e){ return null; }
   return AC;
@@ -229,9 +237,9 @@ function tone(freq,dur,type,vol,delay,slideTo){
   o.type=type||'triangle'; o.frequency.setValueAtTime(freq,t0);
   if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t0+dur);
   g.gain.setValueAtTime(0.0001,t0);
-  g.gain.exponentialRampToValueAtTime(vol||.12,t0+0.012);
+  g.gain.exponentialRampToValueAtTime(vol||.22,t0+0.012);
   g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
-  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+0.02);
+  o.connect(g).connect(out()); o.start(t0); o.stop(t0+dur+0.02);
 }
 function drumTap(vol){
   const c=ac(); if(!c) return;
@@ -240,28 +248,28 @@ function drumTap(vol){
   for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.2);
   const src=c.createBufferSource(); src.buffer=buf;
   const hp=c.createBiquadFilter(); hp.type='bandpass'; hp.frequency.value=1800; hp.Q.value=.8;
-  const g=c.createGain(); g.gain.value=vol||.16;
-  src.connect(hp).connect(g).connect(c.destination); src.start(t0);
+  const g=c.createGain(); g.gain.value=vol||.3;
+  src.connect(hp).connect(g).connect(out()); src.start(t0);
 }
 /* 두구두구 — 드럼 + 계단처럼 올라가는 장난기 있는 가락 */
 const SCALE=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.51];   // 도레미솔라 5음계
 let rollStep=0;
 function sfxRoll(p){
-  drumTap(.09+p*.11);
+  drumTap(.2+p*.22);
   const up=Math.min(SCALE.length-1, Math.floor(p*SCALE.length));
   const n=SCALE[(rollStep++)%3===0? up : Math.max(0,up-2)];
-  tone(n,.07,'square',.06);
-  if(p>.72) tone(n/2,.09,'triangle',.05,.01);    // 마지막엔 낮은 음을 겹쳐 두근두근
+  tone(n,.07,'square',.14);
+  if(p>.72) tone(n/2,.10,'triangle',.12,.01);    // 마지막엔 낮은 음을 겹쳐 두근두근
 }
 /* 짜잔! */
 function sfxWin(){
   const c=ac(); if(!c) return;
-  [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,.22,'triangle',.16,i*0.085));
-  tone(1567.98,.5,'sine',.10,.34);
-  drumTap(.2);
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,.24,'triangle',.32,i*0.085));
+  tone(1567.98,.5,'sine',.22,.34);
+  drumTap(.38);
 }
 /* 카드가 하나씩 나올 때 */
-function sfxPop(i){ tone(520+((i||0)%6)*70,.09,'sine',.09); }
+function sfxPop(i){ tone(520+((i||0)%6)*70,.09,'sine',.2); }
 
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function esc(t){ return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -544,10 +552,20 @@ function drawPool(){
 }
 
 /* ── 설정 ── */
+function drawVol(){
+  const box=$('#volRow'); box.innerHTML='';
+  [['low','🔈 작게'],['mid','🔉 보통'],['high','🔊 크게']].forEach(([k,t])=>{
+    const b=document.createElement('button');
+    b.className='btn mini'+(S.vol===k?' pink':''); b.textContent=t;
+    b.onclick=()=>{ S.vol=k; save(); setVol(); drawVol();
+      if(S.sound){ ac(); tone(880,.12,'triangle',.26); tone(1174.66,.16,'triangle',.24,.1); } };
+    box.appendChild(b);
+  });
+}
 function drawSound(){ $('#btnSound').textContent=S.sound?'🔊':'🔇'; }
 $('#btnSound').onclick=()=>{
   S.sound=!S.sound; save(); drawSound();
-  if(S.sound){ tone(880,.12,'triangle',.14); tone(1174.66,.16,'triangle',.12,.1); }
+  if(S.sound){ tone(880,.12,'triangle',.26); tone(1174.66,.16,'triangle',.24,.1); }
 };
 drawSound();
 $('#btnSet').onclick=()=>{
@@ -556,6 +574,7 @@ $('#btnSet').onclick=()=>{
   $('#tgNoRepeat').querySelector('.sw').classList.toggle('on',!!S.noRepeat);
   $('#tgAnimal').querySelector('.sw').classList.toggle('on',!!S.animal);
   $('#tgSound').querySelector('.sw').classList.toggle('on',!!S.sound);
+  drawVol();
   $('#mSet').classList.add('on');
 };
 $('#inRoster').oninput=()=>{
