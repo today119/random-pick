@@ -292,8 +292,8 @@ function rollOne(box,big){
   let t=0, delay=55;
   (function tick(){
     big.textContent=ani(list[Math.floor(Math.random()*list.length)])+'…';
-    t+=delay; delay=t>900? delay*1.28 : delay;
-    if(delay<420 || t<1400) setTimeout(tick,delay);
+    t+=delay; delay=t>600? delay*1.28 : delay;
+    if(delay<300 || t<1000) setTimeout(tick,delay);
     else{
       big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
       big.textContent=ani(pick)+pick;
