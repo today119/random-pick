@@ -22,6 +22,41 @@ body{margin:0; font-family:'Jua',system-ui,-apple-system,'Apple SD Gothic Neo',s
   background-attachment:fixed; padding-bottom:40px; overflow-x:hidden}
 button{font-family:inherit; color:inherit; cursor:pointer; border:none; background:none}
 .spacer{flex:1}
+
+/* ── ✨ 주인공 스포트라이트 (뽑힌 친구) ── */
+.spot{position:fixed; inset:0; z-index:90; display:none; flex-direction:column; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 50% 46%, #3a2a6e 0%, #1c1438 62%, #120c26 100%); overflow:hidden; cursor:pointer}
+.spot.on{display:flex}
+.spot .rays{position:absolute; left:50%; top:46%; width:220vmax; height:220vmax; margin:-110vmax 0 0 -110vmax;
+  background:repeating-conic-gradient(rgba(255,226,140,.16) 0 9deg, transparent 9deg 22deg);
+  animation:spin 18s linear infinite; pointer-events:none}
+.spot .glow{position:absolute; left:50%; top:46%; width:80vmin; height:80vmin; margin:-40vmin 0 0 -40vmin; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,236,170,.55), rgba(255,200,97,.18) 45%, transparent 70%);
+  animation:breathe 2.2s ease-in-out infinite; pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{0%,100%{transform:scale(.92);opacity:.85}50%{transform:scale(1.06);opacity:1}}
+.spot .inner{position:relative; z-index:2; text-align:center; padding:0 4vw; max-width:100%}
+.spot .cap{color:#ffe6a3; font-size:clamp(24px,5vh,56px); letter-spacing:.04em; text-shadow:0 3px 0 rgba(0,0,0,.25);
+  opacity:0; animation:fadeup .6s .15s ease-out forwards}
+.spot .crown{font-size:clamp(60px,14vh,150px); line-height:1; display:inline-block; margin-top:1vh;
+  animation:crown 1s .25s cubic-bezier(.2,1.6,.4,1) both, wob 2.4s 1.3s ease-in-out infinite}
+.spot .who{display:flex; flex-wrap:wrap; gap:2vh 3vw; justify-content:center; margin-top:1vh}
+.spot .nm{display:inline-block; color:#fff; font-size:clamp(56px,17vh,200px); line-height:1.1; white-space:nowrap;
+  text-shadow:0 0 18px rgba(255,214,120,.9), 0 0 50px rgba(255,170,90,.55), 0 6px 0 rgba(0,0,0,.25);
+  animation:zoomin .75s cubic-bezier(.2,1.5,.35,1) both}
+.spot.many .nm{font-size:clamp(34px,var(--fs,11vh),150px); background:rgba(255,255,255,.1); border:3px solid rgba(255,226,140,.7);
+  border-radius:28px; padding:.08em .45em}
+.spot .msg{color:#fff; font-size:clamp(20px,4.2vh,46px); margin-top:2.4vh; opacity:0; animation:fadeup .6s 1s ease-out forwards}
+.spot .tap{position:absolute; bottom:3vh; left:0; right:0; text-align:center; color:rgba(255,255,255,.55); font-size:clamp(14px,2vh,22px); z-index:2}
+.spot .star{position:absolute; z-index:1; pointer-events:none; animation:twinkle var(--d,2s) var(--dl,0s) ease-in-out infinite}
+@keyframes twinkle{0%,100%{transform:scale(.3) rotate(0);opacity:0}50%{transform:scale(1) rotate(40deg);opacity:1}}
+@keyframes zoomin{0%{transform:scale(.1) rotate(-8deg);opacity:0}70%{transform:scale(1.12) rotate(2deg);opacity:1}100%{transform:scale(1)}}
+@keyframes crown{0%{transform:translateY(-60vh) rotate(-30deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes wob{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.spot .conf2{position:absolute; inset:0; pointer-events:none; z-index:3}
+.spot .conf2 i{position:absolute; top:-20px; width:12px; height:18px; border-radius:3px; animation:drop linear forwards}
+@keyframes drop{to{transform:translateY(110vh) rotate(720deg)}}
 .btn{border:2px solid var(--line); background:#fff; border-radius:18px; padding:.6em 1.1em;
   font-size:clamp(15px,2vh,21px); box-shadow:var(--shadow)}
 .btn:active{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.09)}
@@ -161,7 +196,7 @@ textarea{width:100%; min-height:30vh; font-family:inherit; font-size:clamp(16px,
 
     <div class="toggle" id="tgNoRepeat">
       <div class="sw"><i></i></div>
-      <div>한 명 뽑기에서 <b>뽑힌 친구는 다시 안 뽑기</b></div>
+      <div>한 명·여러 명 뽑기에서 <b>오늘 뽑힌 친구는 다시 안 뽑기</b></div>
     </div>
     <div class="toggle" id="tgAnimal">
       <div class="sw"><i></i></div>
@@ -184,6 +219,10 @@ textarea{width:100%; min-height:30vh; font-family:inherit; font-size:clamp(16px,
 </div>
 </div>
 
+<div class="spot" id="spot"><div class="rays"></div><div class="glow"></div><div class="conf2" id="spotConf"></div>
+  <div class="inner"><div class="cap" id="spotCap"></div><div class="crown">👑</div>
+    <div class="who" id="spotWho"></div><div class="msg" id="spotMsg"></div></div>
+  <div class="tap">화면을 누르면 닫혀요</div></div>
 <script>
 const KEY='pick_v1';
 const $=s=>document.querySelector(s);
@@ -206,8 +245,45 @@ function normalize(o){
   const s=Object.assign({roster:'', mode:'one', noRepeat:true, animal:true,
     off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio', sound:true, vol:'mid'},o||{});
   s.off=s.off||{}; s.done=s.done||{};
+  /* 날짜가 바뀌면 「오늘 뽑힌 친구」와 「오늘 결석」은 새로 시작 */
+  if(s.day!==todayKey()){ s.done={}; s.off={}; s.day=todayKey(); }
   return s;
 }
+function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+/* 수업 중에 자정이 지나도(밤새 켜 둔 화면) 다음 뽑기 전에 맞춘다 */
+function dayCheck(){ if(S.day!==todayKey()){ S.done={}; S.off={}; S.day=todayKey(); save(); drawPool(); return true; } return false; }
+
+/* ✨ 뽑힌 친구를 주인공으로 */
+const SPOT_CAP=['✨ 오늘의 주인공 ✨','🌟 선택받은 친구 🌟','두구두구… 바로 너야!','🎉 축하해요! 🎉'];
+const SPOT_MSG=['기다렸어! 멋지게 해 보자 💪','네 차례야, 선생님이 응원할게 📣','반짝반짝 빛나는 시간이야 ✨','모두 박수 짝짝짝! 👏'];
+function spotlight(list){
+  const sp=$('#spot'), many=list.length>1;
+  sp.classList.toggle('many',many);
+  $('#spotCap').textContent= many? `🌟 선택받은 친구 ${list.length}명 🌟` : SPOT_CAP[Math.floor(Math.random()*SPOT_CAP.length)];
+  $('#spotMsg').textContent=SPOT_MSG[Math.floor(Math.random()*SPOT_MSG.length)];
+  const who=$('#spotWho');
+  who.style.setProperty('--fs', (list.length<=3?13:list.length<=6?10:list.length<=10?8:6)+'vh');
+  who.innerHTML=list.map((n,i)=>`<span class="nm" style="animation-delay:${.45+i*.18}s">${ani(n)}${esc(n)}</span>`).join('');
+  /* 다시 열 때 애니메이션이 처음부터 돌도록 */
+  sp.querySelectorAll('.cap,.crown,.msg,.nm').forEach(e=>{ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
+  sp.querySelectorAll('.star').forEach(s=>s.remove());
+  for(let i=0;i<22;i++){
+    const s=document.createElement('div'); s.className='star'; s.textContent=['✨','⭐','🌟','💫'][i%4];
+    s.style.left=Math.random()*96+'%'; s.style.top=Math.random()*92+'%';
+    s.style.fontSize=(18+Math.random()*34)+'px';
+    s.style.setProperty('--d',(1.4+Math.random()*1.8)+'s'); s.style.setProperty('--dl',(Math.random()*2)+'s');
+    sp.appendChild(s);
+  }
+  const cf=$('#spotConf'); cf.innerHTML='';
+  const cols=['#ff8fb1','#ffc861','#5ecfb0','#8b6fd6','#6fc3f0','#ff9f68','#fff'];
+  for(let i=0;i<70;i++){
+    const p=document.createElement('i'); p.style.left=Math.random()*100+'%'; p.style.background=cols[i%cols.length];
+    p.style.animationDuration=(2+Math.random()*2.2)+'s'; p.style.animationDelay=(.4+Math.random()*1.4)+'s';
+    if(i%3===0) p.style.borderRadius='50%'; cf.appendChild(p);
+  }
+  sp.classList.add('on');
+}
+function closeSpot(){ $('#spot').classList.remove('on'); $('#spotConf').innerHTML=''; }
 function names(){
   return S.roster.split(/[\n,\t]+/).map(t=>t.trim())
     .map(t=>t.replace(/^\(?\d+\)?[.)\]]?\s*/,'').trim()).filter(Boolean);
@@ -319,9 +395,10 @@ function ctl(box,items){ const c=el('div','ctl'); items.forEach(b=>c.appendChild
 function freshBtn(){
   return mkBtn('🔄 새로 뽑기','mini',()=>{
     if(rolling) return;
-    if(S.mode==='one' && Object.keys(S.done).length
-       && !confirm('뽑은 기록을 지우고 처음부터 다시 뽑을까요?\n(명단은 그대로예요)')) return;
-    if(S.mode==='one'){ S.done={}; save(); }
+    const own=S.mode==='one'||S.mode==='many';   /* 한 명·여러 명은 「오늘 뽑힌 친구」 기록을 같이 쓴다 */
+    if(own && Object.keys(S.done).length
+       && !confirm('오늘 뽑힌 기록을 지우고 처음부터 다시 뽑을까요?\n(명단·결석은 그대로예요)')) return;
+    if(own){ S.done={}; save(); }
     drawBoard(); drawPool();
   });
 }
@@ -349,7 +426,7 @@ function boardOne(box,list){
   if(!left.length){ big.textContent='모두 다 뽑았어요! 🎉'; go.disabled=true; }
   ctl(box,[go,freshBtn()]);
   if(Object.keys(S.done).length){
-    box.appendChild(el('div','sayline','지금까지 뽑힌 친구'));
+    box.appendChild(el('div','sayline','오늘 뽑힌 친구'));
     const p=el('div','picked');
     Object.keys(S.done).forEach(n=>p.appendChild(el('span','ptag',ani(n)+esc(n))));
     box.appendChild(p);
@@ -357,7 +434,8 @@ function boardOne(box,list){
 }
 function rollOne(box,big){
   if(rolling) return;
-  ac();                       // 누른 그 순간에 소리를 깨워 둔다(모바일 대응)
+  ac();
+  if(dayCheck()){ drawBoard(); return; }                       // 누른 그 순간에 소리를 깨워 둔다(모바일 대응)
   const list=alive();
   const pool=S.noRepeat? list.filter(n=>!S.done[n]) : list;
   if(!pool.length) return;
@@ -372,6 +450,7 @@ function rollOne(box,big){
     big.textContent=ani(pick)+pick;
     if(S.noRepeat){ S.done[pick]=1; save(); }
     confetti(); sfxWin(); rolling=false;
+    setTimeout(()=>spotlight([pick]),250);
     const s=box.querySelector('.sayline');
     if(s && S.noRepeat){
       const left=alive().filter(n=>!S.done[n]).length;
@@ -392,24 +471,43 @@ function rollOne(box,big){
 
 /* 2) 여러 명 뽑기 */
 function boardMany(box,list){
+  const left=S.noRepeat? list.filter(n=>!S.done[n]) : list;
   box.appendChild(el('div','mascot','🎁'));
   const res=el('div','picked'); const big=el('div','bigname','몇 명 뽑을까?');
   box.appendChild(big);
+  box.appendChild(el('div','sayline', S.noRepeat
+    ? ('아직 안 뽑은 친구 <b>'+left.length+'명</b> / 모두 '+list.length+'명')
+    : ('오늘 온 친구 <b>'+list.length+'명</b>')));
   box.appendChild(counter('뽑을 사람', ()=>S.pickN, v=>S.pickN=v, 1, Math.max(1,list.length)));
-  ctl(box,[ mkBtn('🎲 뽑기!','primary',()=>{
+  const go=mkBtn('🎲 뽑기!','primary',()=>{
+      if(rolling) return;
       ac();
-      const n=Math.min(S.pickN,list.length);
-      const out=shuffle(list.slice()).slice(0,n);
-      big.textContent=n+'명 뽑았어요!';
+      if(dayCheck()){ drawBoard(); return; }
+      const pool=S.noRepeat? alive().filter(n=>!S.done[n]) : alive();
+      if(!pool.length) return;
+      const n=Math.min(S.pickN,pool.length);
+      const out=shuffle(pool.slice()).slice(0,n);
+      if(S.noRepeat){ out.forEach(nm=>S.done[nm]=1); save(); }
+      rolling=true;
+      big.textContent= n<S.pickN ? `남은 ${n}명을 모두 뽑았어요!` : n+'명 뽑았어요!';
       res.innerHTML=''; out.forEach((nm,i)=>setTimeout(()=>{
         res.appendChild(el('span','ptag',ani(nm)+esc(nm))); sfxPop(i);
-        if(i===out.length-1){ confetti(); sfxWin(); }
+        if(i===out.length-1){ confetti(); sfxWin(); rolling=false; setTimeout(()=>{ spotlight(out); drawPool(); },350); }
       }, i*220));
-    }),
+    });
+  if(!left.length){ big.textContent='모두 한 번씩 뽑혔어요! 🎉'; go.disabled=true; }
+  ctl(box,[ go,
     mkBtn('📋 복사','mini',()=>copy(Array.from(res.children).map(c=>c.textContent).join('\n'))),
     freshBtn()
   ]);
   box.appendChild(res);
+  const before=Object.keys(S.done);
+  if(S.noRepeat && before.length){
+    box.appendChild(el('div','sayline','오늘 뽑힌 친구'));
+    const p=el('div','picked'); p.style.opacity='.75';
+    before.forEach(n=>p.appendChild(el('span','ptag',ani(n)+esc(n))));
+    box.appendChild(p);
+  }
 }
 
 /* 3) 짝 만들기 */
@@ -539,7 +637,7 @@ function drawPool(){
   const offN=list.filter(n=>S.off[n]).length;
   box.innerHTML='<h3>우리 반 <span style="color:var(--grape-d)">'+(list.length-offN)+'명</span>'
     +(offN?' <span style="color:var(--sub);font-size:.85em">· 오늘 빠짐 '+offN+'명</span>':'')+'</h3>'
-    +'<p class="hint">오늘 안 온 친구는 <b>이름을 눌러</b> 빼 두세요. 분홍 테두리는 <b>이미 뽑힌 친구</b>예요.</p>'
+    +'<p class="hint">🙋 <b>결석한 친구는 이름을 눌러 빼 두세요</b> (회색 줄 = 오늘 빠짐). 분홍 테두리 = <b>오늘 이미 뽑힌 친구</b>. 내일이 되면 둘 다 저절로 지워져요.</p>'
     +'<div class="chips" id="chips"></div>';
   const chips=$('#chips');
   list.forEach(n=>{
@@ -602,6 +700,9 @@ $('#btnWipe').onclick=()=>{
 $('#mSet').addEventListener('click',e=>{ if(e.target===$('#mSet')) $('#btnCancel').click(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') $('#mSet').classList.remove('on'); });
 
+$('#spot').onclick=closeSpot;
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSpot(); });
+if(S.day && load().day!==S.day) save();
 drawTabs(); drawBoard(); drawPool();
 if(!names().length) $('#btnSet').click();
 </script>
