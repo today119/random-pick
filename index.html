@@ -120,6 +120,57 @@ header{display:flex; align-items:center; gap:10px; padding:14px 16px 2px; flex-w
 .ptag{border:2px solid var(--pink); background:#fff2f7; border-radius:14px; padding:.3em .6em;
   font-size:clamp(15px,2vh,20px)}
 
+/* ── 모둠 뽑기 ── */
+.gpgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:12px; width:100%; margin-top:6px}
+.gpc{border:4px solid var(--line); border-radius:24px; background:#fff; padding:14px 8px; text-align:center; position:relative;
+  box-shadow:0 5px 0 rgba(0,0,0,.07); transition:transform .08s}
+.gpc .ic{display:block; font-size:clamp(34px,6vh,58px); line-height:1.1}
+.gpc b{font-size:clamp(20px,3.2vh,32px)}
+.gpc i{position:absolute; top:6px; right:10px; font-style:normal; font-size:13px; color:var(--pink-d)}
+.gpc.c0{border-color:#ffc0d4} .gpc.c1{border-color:#bfe3ff} .gpc.c2{border-color:#c9f0dd}
+.gpc.c3{border-color:#ffe3a8} .gpc.c4{border-color:#dcd0ff} .gpc.c5{border-color:#ffd2b8}
+.gpc.done{opacity:.35; filter:grayscale(.7)}
+.gpc.lit{transform:scale(1.08); background:#fff6cc; border-color:var(--sun); box-shadow:0 0 0 5px #ffe58a, 0 8px 0 rgba(0,0,0,.08)}
+.gpc.win{animation:gwin .8s cubic-bezier(.2,1.6,.4,1); background:#fff2b3}
+@keyframes gwin{0%{transform:scale(1)}40%{transform:scale(1.25) rotate(-4deg)}100%{transform:scale(1.08)}}
+
+/* ── 사다리 ── */
+body.wide .stage{max-width:1400px}
+body.wide .board .mascot{display:none}
+body.wide .bigname{font-size:clamp(24px,5.5vh,56px)}
+body.wide .ladarea .lmid{height:max(260px,calc(100vh - 470px))}
+.ladform{width:100%; display:flex; flex-direction:column; gap:8px}
+.lf{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+.lf .lt{font-size:clamp(15px,2vh,20px); color:var(--grape-d); min-width:6.5em}
+.lf input{flex:1; min-width:260px; font-family:inherit; font-size:clamp(15px,2vh,20px); border:2px solid var(--line); border-radius:14px; padding:.45em .7em; color:var(--ink)}
+.lp{display:flex; gap:6px; flex-wrap:wrap}
+.ladarea{width:100%; margin-top:8px; --n:4}
+.lrow{display:grid; grid-template-columns:repeat(var(--n),1fr); gap:6px}
+.ltop{border:3px solid var(--lc); background:#fff; border-radius:16px; padding:.4em .2em; font-size:clamp(14px,min(2.4vh,calc(13vw / var(--n))),24px);
+  box-shadow:0 4px 0 var(--lc); line-height:1.2; word-break:keep-all; display:flex; flex-direction:column; align-items:center}
+.ltop:hover{transform:translateY(-2px)}
+.ltop.go{background:var(--lc); color:#fff; animation:hop .5s ease-in-out infinite}
+.ltop.did{opacity:.75}
+.ltop small{font-size:.7em; color:var(--sub)}
+.ltop .la:empty{display:none}
+.lmid{position:relative; height:44vh; min-height:260px; margin:6px 0}
+.ladsvg{position:absolute; inset:0; width:100%; height:100%}
+.ladsvg .lv{stroke:#d9d0ea; stroke-width:7; stroke-linecap:round; vector-effect:non-scaling-stroke}
+.ladsvg .lr{stroke:#d9d0ea; stroke-width:6; stroke-linecap:round; vector-effect:non-scaling-stroke}
+.ladsvg .lt{fill:none; stroke-width:9; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 4px rgba(255,255,255,.9))}
+.ladarea.tracing .ladsvg .lt{opacity:.35}
+.ladarea.tracing .ladsvg .lt:last-child{opacity:1}
+.lball{position:absolute; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%; border:4px solid #fff; box-shadow:0 0 0 3px rgba(0,0,0,.08),0 0 18px rgba(255,200,80,.9); opacity:0; pointer-events:none; z-index:2}
+.lball.on{opacity:1}
+.lbot{position:relative; height:clamp(54px,8vh,84px); perspective:600px}
+.lbot .q,.lbot .r{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; border-radius:16px; backface-visibility:hidden; transition:transform .6s cubic-bezier(.3,1.5,.5,1); text-align:center; padding:0 .2em; word-break:keep-all; line-height:1.15}
+.lbot .q{background:repeating-linear-gradient(45deg,#b9a7ea 0 10px,#a993e3 10px 20px); color:#fff; font-size:clamp(24px,4vh,40px); box-shadow:0 4px 0 #8b6fd6}
+.lbot .r{background:#fff7d6; border:3px solid var(--lc,#ffc861); transform:rotateY(180deg); font-size:clamp(13px,min(2.4vh,calc(12vw / var(--n))),24px); box-shadow:0 4px 0 var(--lc,#ffc861)}
+.lbot.open .q{transform:rotateY(-180deg)}
+.lbot.open .r{transform:rotateY(0)}
+.lbot.open:not(.lose) .r{animation:gwin .8s .3s}
+.lbot.lose .r{background:#f3f1f8; color:var(--sub)}
+
 /* 색종이 */
 .confetti{position:absolute; inset:0; pointer-events:none; overflow:hidden}
 .confetti i{position:absolute; width:9px; height:14px; border-radius:2px; animation:fall linear forwards}
@@ -235,7 +286,9 @@ const MODES=[
   {id:'many', t:'✨ 여러 명 뽑기'},
   {id:'pair', t:'👫 짝 만들기'},
   {id:'group',t:'🧩 모둠 나누기'},
-  {id:'order',t:'🔢 순서 정하기'}
+  {id:'order',t:'🔢 순서 정하기'},
+  {id:'gpick',t:'🍀 모둠 뽑기'},
+  {id:'ladder',t:'🪜 사다리 타기'}
 ];
 
 let S=normalize(load());
@@ -245,27 +298,28 @@ function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 function normalize(o){
   const s=Object.assign({roster:'', mode:'one', noRepeat:true, animal:true,
-    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio', sound:true, vol:'mid'},o||{});
-  s.off=s.off||{}; s.done=s.done||{};
+    off:{}, done:{}, pickN:3, groupN:4, groupBy:'count', oddMode:'trio', sound:true, vol:'mid', gpN:6, gpNoRep:true, gpDone:{}, ladTop:'', ladBot:''},o||{});
+  s.off=s.off||{}; s.done=s.done||{}; s.gpDone=s.gpDone||{};
   /* 날짜가 바뀌면 「오늘 뽑힌 친구」와 「오늘 결석」은 새로 시작 */
-  if(s.day!==todayKey()){ s.done={}; s.off={}; s.day=todayKey(); }
+  if(s.day!==todayKey()){ s.done={}; s.off={}; s.gpDone={}; s.day=todayKey(); }
   return s;
 }
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 /* 수업 중에 자정이 지나도(밤새 켜 둔 화면) 다음 뽑기 전에 맞춘다 */
-function dayCheck(){ if(S.day!==todayKey()){ S.done={}; S.off={}; S.day=todayKey(); save(); drawPool(); return true; } return false; }
+function dayCheck(){ if(S.day!==todayKey()){ S.done={}; S.off={}; S.gpDone={}; S.day=todayKey(); save(); drawPool(); return true; } return false; }
 
 /* ✨ 뽑힌 친구를 주인공으로 */
 const SPOT_CAP=['✨ 오늘의 주인공 ✨','🌟 선택받은 친구 🌟','두구두구… 바로 너야!','🎉 축하해요! 🎉'];
 const SPOT_MSG=['기다렸어! 멋지게 해 보자 💪','네 차례야, 선생님이 응원할게 📣','반짝반짝 빛나는 시간이야 ✨','모두 박수 짝짝짝! 👏'];
-function spotlight(list){
+function spotlight(list,opt){
+  opt=opt||{};
   const sp=$('#spot'), many=list.length>1;
   sp.classList.toggle('many',many);
-  $('#spotCap').textContent= many? `🌟 선택받은 친구 ${list.length}명 🌟` : SPOT_CAP[Math.floor(Math.random()*SPOT_CAP.length)];
-  $('#spotMsg').textContent=SPOT_MSG[Math.floor(Math.random()*SPOT_MSG.length)];
+  $('#spotCap').textContent= opt.cap? opt.cap : many? `🌟 선택받은 친구 ${list.length}명 🌟` : SPOT_CAP[Math.floor(Math.random()*SPOT_CAP.length)];
+  $('#spotMsg').textContent=opt.msg||SPOT_MSG[Math.floor(Math.random()*SPOT_MSG.length)];
   const who=$('#spotWho');
   who.style.setProperty('--fs', (list.length<=3?13:list.length<=6?10:list.length<=10?8:6)+'vh');
-  who.innerHTML=list.map((n,i)=>`<span class="nm" style="animation-delay:${.45+i*.18}s">${ani(n)}${esc(n)}</span>`).join('');
+  who.innerHTML=list.map((n,i)=>`<span class="nm" style="animation-delay:${.45+i*.18}s">${opt.raw?'':ani(n)}${esc(n)}</span>`).join('');
   /* 다시 열 때 애니메이션이 처음부터 돌도록 */
   sp.querySelectorAll('.cap,.crown,.msg,.nm').forEach(e=>{ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
   sp.querySelectorAll('.star').forEach(s=>s.remove());
@@ -381,6 +435,9 @@ function drawBoard(html){
   b.appendChild(box);
   if(html){ box.innerHTML=html; return box; }
   const list=alive();
+  document.body.classList.toggle('wide',S.mode==='ladder');
+  if(S.mode==='gpick'){ boardGpick(box); return box; }
+  if(S.mode==='ladder'){ boardLadder(box,list); return box; }
   if(names().length<1){
     box.innerHTML='<div class="mascot">🐣</div><div class="sayline">먼저 <b>⚙️ 명단</b> 에서 우리 반 이름을 붙여넣어 주세요!</div>';
     return box;
@@ -610,6 +667,205 @@ function boardOrder(box,list){
     freshBtn()
   ]);
   box.appendChild(wrap);
+}
+
+/* 6) 모둠 뽑기 */
+function boardGpick(box){
+  box.appendChild(el('div','mascot','🍀'));
+  const big=el('div','bigname','어느 모둠일까?'); box.appendChild(big);
+  const grid=el('div','gpgrid');
+  const left=()=>Array.from({length:S.gpN},(_,i)=>i+1).filter(k=>!(S.gpNoRep&&S.gpDone[k]));
+  const say=el('div','sayline');
+  function cards(){
+    grid.innerHTML='';
+    for(let k=1;k<=S.gpN;k++){
+      const c=el('div','gpc c'+((k-1)%6)+(S.gpNoRep&&S.gpDone[k]?' done':''),
+        '<span class="ic">'+GROUPICON[(k-1)%GROUPICON.length]+'</span><b>'+k+'모둠</b>'+(S.gpDone[k]?'<i>✔ 뽑힘</i>':''));
+      c.dataset.k=k; grid.appendChild(c);
+    }
+    say.innerHTML= S.gpNoRep? '아직 안 뽑힌 모둠 <b>'+left().length+'개</b> / 모두 '+S.gpN+'개' : '모둠 <b>'+S.gpN+'개</b> 중에서 뽑아요';
+  }
+  const cnt=counter('모둠 수', ()=>S.gpN, v=>{ S.gpN=v; Object.keys(S.gpDone).forEach(k=>{ if(+k>v) delete S.gpDone[k]; }); cards(); }, 2, 10);
+  box.appendChild(cnt);
+  const tg=mkBtn((S.gpNoRep?'✅':'⬜')+' 오늘 뽑힌 모둠은 빼고 뽑기','mini',()=>{ S.gpNoRep=!S.gpNoRep; save(); drawBoard(); });
+  box.appendChild(tg);
+  const go=mkBtn('🎲 모둠 뽑기!','primary',()=>rollG());
+  const fresh=mkBtn('🔄 새로 뽑기','mini',()=>{ if(rolling)return; S.gpDone={}; save(); big.textContent='어느 모둠일까?'; cards(); go.disabled=false; });
+  ctl(box,[go,fresh]);
+  box.appendChild(grid); box.appendChild(say);
+  cards();
+  if(!left().length){ big.textContent='모든 모둠이 다 뽑혔어요! 🎉'; go.disabled=true; }
+  function rollG(){
+    if(rolling) return; ac();
+    if(dayCheck()){ drawBoard(); return; }
+    const pool=left(); if(!pool.length) return;
+    const pick=pool[Math.floor(Math.random()*pool.length)];
+    rolling=true; big.classList.add('roll');
+    const mascot=box.querySelector('.mascot'); if(mascot) mascot.classList.add('roll');
+    const els=[...grid.querySelectorAll('.gpc')].filter(c=>pool.includes(+c.dataset.k));
+    // 차례로 번쩍이다 점점 느려져 pick 에 멈춤
+    let steps=[], i=Math.floor(Math.random()*els.length), t=0, gap=60;
+    const target=els.findIndex(c=>+c.dataset.k===pick);
+    while(t<2600 || i%els.length!==target){ steps.push({t,i:i%els.length}); i++; t+=gap; gap=Math.min(520,gap*(t<1400?1.05:1.13)); if(steps.length>400)break; }
+    steps.push({t,i:target});
+    const t0=performance.now(); let si=0, over=false;
+    function lit(j){ els.forEach((c,k)=>c.classList.toggle('lit',k===j)); }
+    function finish(){
+      if(over)return; over=true; lit(target);
+      const c=els[target]; c.classList.add('win');
+      big.classList.remove('roll'); if(mascot) mascot.classList.remove('roll');
+      big.textContent=GROUPICON[(pick-1)%GROUPICON.length]+' '+pick+'모둠!';
+      S.gpDone[pick]=1; save(); confetti(); sfxWin(); rolling=false;
+      setTimeout(()=>{ spotlight([GROUPICON[(pick-1)%GROUPICON.length]+' '+pick+'모둠'],{raw:true,cap:['🍀 뽑힌 모둠은?!','✨ 오늘의 주인공 모둠 ✨','두구두구… 바로 이 모둠!'][Math.floor(Math.random()*3)],msg:['모둠 친구들 다 함께 일어나요! 🙌','멋지게 해 보자, 파이팅! 💪','모두 박수 짝짝짝! 👏'][Math.floor(Math.random()*3)]}); },500);
+      setTimeout(()=>{ cards(); if(!left().length){ go.disabled=true; } },900);
+    }
+    function frame(now){
+      if(over)return;
+      const e=now-t0;
+      while(si<steps.length && steps[si].t<=e){ lit(steps[si].i); sfxRoll(Math.min(1,steps[si].t/steps[steps.length-1].t)); si++; }
+      if(si>=steps.length) finish(); else requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    setTimeout(finish,steps[steps.length-1].t+700);
+  }
+}
+
+/* 7) 사다리 타기 */
+const LADCOL=['#ff6b9a','#4dabf7','#51cf66','#ffa94d','#9775fa','#20c997','#f06595','#fab005','#339af0','#ff8787','#5c7cfa','#94d82d'];
+const LADP_TOP=()=>[
+  ['🧩 모둠',Array.from({length:S.gpN||6},(_,i)=>(i+1)+'모둠').join(', ')],
+  ['🔢 번호 1~6','1번, 2번, 3번, 4번, 5번, 6번'],
+  ['🙋 오늘 온 친구',alive().length<=12? alive().join(', ') : null]
+];
+const LADP_BOT=n=>[
+  ['🎁 당첨 1개',['🎁 당첨'].concat(Array(Math.max(0,n-1)).fill('꽝')).join(', ')],
+  ['🎁 당첨 2개',['🎁 당첨','🎁 당첨'].concat(Array(Math.max(0,n-2)).fill('꽝')).join(', ')],
+  ['🥇 순서',Array.from({length:n},(_,i)=>(i+1)+'번째').join(', ')],
+  ['🧹 역할',['발표','기록','정리','준비물','칭찬 대장','시간 지킴이','응원 단장','질문 왕','청소 반장','심부름','사진 담당','이끔이'].slice(0,n).join(', ')]
+];
+let LAD=null;
+function splitL(t){ return String(t||'').split(/[,，\n]+/).map(x=>x.trim()).filter(Boolean); }
+function boardLadder(box,list){
+  box.appendChild(el('div','mascot','🪜'));
+  const big=el('div','bigname','두근두근 사다리 타기'); box.appendChild(big);
+  if(!S.ladTop) S.ladTop=LADP_TOP()[0][1];
+  if(!S.ladBot) S.ladBot=LADP_BOT(splitL(S.ladTop).length)[0][1];
+  const form=el('div','ladform');
+  form.innerHTML='<div class="lf"><span class="lt">⬆ 위 (누가)</span><input id="ladTop"><div class="lp" id="ladTopP"></div></div>'
+    +'<div class="lf"><span class="lt">⬇ 아래 (무엇)</span><input id="ladBot"><div class="lp" id="ladBotP"></div></div>'
+    +'<div class="sayline">쉼표(,)로 나눠 적어요 · 2~12칸 · 아래 칸이 모자라면 「꽝」으로 채워요</div>';
+  box.appendChild(form);
+  const iT=form.querySelector('#ladTop'), iB=form.querySelector('#ladBot');
+  iT.value=S.ladTop; iB.value=S.ladBot;
+  iT.oninput=()=>{ S.ladTop=iT.value; save(); presets(); };
+  iB.oninput=()=>{ S.ladBot=iB.value; save(); };
+  function presets(){
+    const pt=form.querySelector('#ladTopP'); pt.innerHTML='';
+    LADP_TOP().forEach(([t,v])=>{ const b=mkBtn(t,'mini',()=>{ iT.value=S.ladTop=v; save(); presets(); }); if(!v){ b.disabled=true; b.title='12명 이하일 때만'; } pt.appendChild(b); });
+    const pb=form.querySelector('#ladBotP'); pb.innerHTML='';
+    const n=Math.max(2,Math.min(12,splitL(iT.value).length));
+    LADP_BOT(n).forEach(([t,v])=>pb.appendChild(mkBtn(t,'mini',()=>{ iB.value=S.ladBot=v; save(); })));
+  }
+  presets();
+  const area=el('div','ladarea'); 
+  const bMake=mkBtn('🪜 사다리 만들기!','primary',()=>{ if(rolling)return; ac(); make(); });
+  const bAll=mkBtn('🎬 하나씩 모두 공개','pink',()=>revealAll()); bAll.disabled=true;
+  const bMix=mkBtn('🔀 다시 섞기','mini',()=>{ if(rolling)return; make(); }); bMix.disabled=true;
+  const bEdit=mkBtn('✏️ 칸 고치기','mini',()=>{ if(rolling)return; form.style.display=form.style.display==='none'?'':'none'; }); bEdit.style.display='none';
+  ctl(box,[bMake,bAll,bMix,bEdit]);
+  box.appendChild(area);
+  function make(){
+    let top=splitL(S.ladTop).slice(0,12), bot=splitL(S.ladBot);
+    if(top.length<2){ big.textContent='위 칸을 2개 이상 적어 주세요 🙂'; return; }
+    const n=top.length;
+    if(bot.length<n) bot=bot.concat(Array(n-bot.length).fill('꽝'));
+    bot=shuffle(bot.slice(0,n));
+    const R=n<=4?9:n<=8?11:13, rungs=[];
+    for(let r=0;r<R;r++){ const row=[]; for(let c=0;c<n-1;c++){ row.push(!row[c-1] && Math.random()<.42); } rungs.push(row); }
+    for(let c=0;c<n-1;c++){ // 칸마다 가로줄 최소 2개
+      let k=rungs.filter(r=>r[c]).length;
+      for(let r=0;k<2&&r<R*3;r++){ const rr=Math.floor(Math.random()*R); const row=rungs[rr]; if(!row[c] && !row[c-1] && !row[c+1]){ row[c]=true; k++; } }
+    }
+    LAD={n,R,top,bot,rungs,done:{}};
+    big.textContent='누구부터 내려가 볼까? 이름을 눌러요!';
+    bAll.disabled=false; bMix.disabled=false; form.style.display='none'; bEdit.style.display='';
+    drawLad(); sfxPop(0);
+  }
+  const Y=r=>60+r*(480/(LAD.R-1));
+  function path(c){
+    const pts=[[c,0]]; let x=c;
+    for(let r=0;r<LAD.R;r++){
+      const y=Y(r);
+      if(LAD.rungs[r][x]){ pts.push([x,y]); x++; pts.push([x,y]); }
+      else if(x>0 && LAD.rungs[r][x-1]){ pts.push([x,y]); x--; pts.push([x,y]); }
+    }
+    pts.push([x,600]); return {pts,end:x};
+  }
+  function drawLad(){
+    const {n,R,top,bot,rungs}=LAD, W=n*100;
+    let svg='<svg class="ladsvg" viewBox="0 0 '+W+' 600" preserveAspectRatio="none">';
+    for(let c=0;c<n;c++) svg+='<line x1="'+(c*100+50)+'" y1="0" x2="'+(c*100+50)+'" y2="600" class="lv"/>';
+    for(let r=0;r<R;r++) for(let c=0;c<n-1;c++) if(rungs[r][c]) svg+='<line x1="'+(c*100+50)+'" y1="'+Y(r)+'" x2="'+(c*100+150)+'" y2="'+Y(r)+'" class="lr"/>';
+    svg+='<g id="trails"></g></svg>';
+    area.style.setProperty('--n',n);
+    area.innerHTML='<div class="lrow top">'+top.map((t,c)=>'<button class="ltop" data-c="'+c+'" style="--lc:'+LADCOL[c%12]+'"><span class="la">'+(S.animal&&names().includes(t)?ani(t):'')+'</span>'+esc(t)+'</button>').join('')+'</div>'
+      +'<div class="lmid">'+svg+'<div class="lball" id="lball"></div></div>'
+      +'<div class="lrow bot">'+bot.map((t,c)=>'<div class="lbot" data-c="'+c+'"><span class="q">?</span><span class="r">'+esc(t)+'</span></div>').join('')+'</div>';
+    area.querySelectorAll('.ltop').forEach(b=>b.onclick=()=>trace(+b.dataset.c,true));
+  }
+  function trace(c,single){
+    return new Promise(done=>{
+      if(rolling || !LAD || LAD.done[c]){ done(); return; }
+      ac(); rolling=true; LAD.done[c]=1;
+      const {pts,end}=path(c), col=LADCOL[c%12], W=LAD.n*100;
+      const P=pts.map(([x,y])=>[x*100+50,y]);
+      const seg=[]; let L=0; for(let k=1;k<P.length;k++){ const d=Math.hypot(P[k][0]-P[k-1][0],(P[k][1]-P[k-1][1])); seg.push(d); L+=d; }
+      const g=area.querySelector('#trails');
+      const pl=document.createElementNS('http://www.w3.org/2000/svg','polyline'); pl.setAttribute('class','lt'); pl.style.stroke=col; g.appendChild(pl);
+      const ball=area.querySelector('#lball'); ball.style.background=col; ball.classList.add('on');
+      const topB=area.querySelector('.ltop[data-c="'+c+'"]'); topB.classList.add('go');
+      area.classList.add('tracing');
+      const fast=single?1:1.6, slowAt=.78;
+      const T1=2600/fast, T2=1900/fast; // 앞 78%는 빠르게, 마지막은 천천히(두근두근)
+      const t0=performance.now(); let lastTurn=0, beat=0;
+      function posAt(d){ let acc=0; const out=[P[0]]; for(let k=0;k<seg.length;k++){ if(acc+seg[k]>=d){ const f=(d-acc)/seg[k]; out.push([P[k][0]+(P[k+1][0]-P[k][0])*f,P[k][1]+(P[k+1][1]-P[k][1])*f]); return {pts:out,k}; } acc+=seg[k]; out.push(P[k+1]); } return {pts:out,k:seg.length}; }
+      function frame(now){
+        const e=now-t0; let d;
+        if(e<T1) d=L*slowAt*(e/T1); else d=L*(slowAt+(1-slowAt)*Math.min(1,(e-T1)/T2));
+        const {pts:q,k}=posAt(d); const cur=q[q.length-1];
+        pl.setAttribute('points',q.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' '));
+        ball.style.left=(cur[0]/W*100)+'%'; ball.style.top=(cur[1]/600*100)+'%';
+        if(k>lastTurn){ lastTurn=k; if(P[k] && P[k-1] && P[k][1]===P[k-1][1]) {} else drumTap(.5); tone(600+k*25,.05,'square',.08); }
+        if(e>T1 && e-beat>(e<T1+T2*.6?420:260)){ beat=e; tone(70,.18,'sine',.5); tone(55,.2,'sine',.4,.12); }
+        if(d<L) requestAnimationFrame(frame); else fin();
+      }
+      let over=false;
+      function fin(){
+        if(over) return; over=true;
+        pl.setAttribute('points',P.map(p=>p[0]+','+p[1]).join(' '));
+        ball.classList.remove('on'); area.classList.remove('tracing'); topB.classList.remove('go'); topB.classList.add('did');
+        const b=area.querySelector('.lbot[data-c="'+end+'"]'); b.classList.add('open'); b.style.setProperty('--lc',col);
+        const res=LAD.bot[end], lose=/꽝/.test(res);
+        b.classList.toggle('lose',lose);
+        topB.insertAdjacentHTML('beforeend','<small>→ '+esc(res)+'</small>');
+        if(lose){ tone(392,.18,'sawtooth',.18,0,196); tone(196,.3,'triangle',.2,.18,110); big.textContent=LAD.top[c]+' → '+res+' 😝'; }
+        else { confetti(); sfxWin(); big.textContent=LAD.top[c]+' → '+res+'!'; }
+        rolling=false;
+        if(single && !lose) setTimeout(()=>spotlight([LAD.top[c]],{raw:!names().includes(LAD.top[c]),cap:'🪜 '+res+'!',msg:'사다리가 골라 줬어요! 🎉'}),700);
+        if(Object.keys(LAD.done).length===LAD.n) bAll.disabled=true;
+        setTimeout(done,single?0:900);
+      }
+      requestAnimationFrame(frame);
+      setTimeout(fin,T1+T2+800);
+    });
+  }
+  async function revealAll(){
+    if(rolling||!LAD) return; bAll.disabled=true; bMix.disabled=true; bMake.disabled=true;
+    for(let c=0;c<LAD.n;c++){ if(!LAD.done[c]) await trace(c,false); }
+    bMix.disabled=false; bMake.disabled=false;
+    big.textContent='사다리 결과가 모두 나왔어요! 🎉'; sfxWin();
+  }
+  if(LAD && LAD.top.join()===splitL(S.ladTop).slice(0,12).join()){ LAD.done={}; drawLad(); form.style.display='none'; bEdit.style.display=''; bAll.disabled=false; bMix.disabled=false; big.textContent='누구부터 내려가 볼까? 이름을 눌러요!'; }
 }
 
 /* ── 색종이 ── */
